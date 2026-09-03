@@ -1,0 +1,433 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: "Fira Code", monospace;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-serif: "EB Garamond", Georgia, serif;
+  --font-cinzel: "Cinzel", Georgia, serif;
+  --font-typewriter: "Courier Prime", monospace;
+  --font-playfair: "Playfair Display", Georgia, serif;
+}
+
+:root {
+  --theme-primary: #06b6d4;
+  --theme-secondary: #f59e0b;
+  --theme-bg: #090a0f;
+  --theme-panel: #0e1118;
+  --theme-border: #1e293b;
+  --theme-font: "Fira Code", monospace;
+  --theme-heading-font: "Space Grotesk", "Fira Code", monospace;
+  --theme-body-font: "Fira Code", monospace;
+}
+
+body {
+  font-family: var(--theme-body-font, var(--font-mono));
+  background-color: var(--theme-bg, #0a0a0c);
+  color: #d1d5db;
+  overflow-x: hidden;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+.app-theme-root {
+  background-color: var(--theme-bg, #0a0a0c);
+  font-family: var(--theme-body-font, var(--font-mono));
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Geometric balance dot matrix and grid patterns */
+.bg-grid-dots {
+  background-image: radial-gradient(#1e293b 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.bg-grid-lines {
+  background-image: 
+    linear-gradient(to right, rgba(30, 41, 59, 0.4) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 41, 59, 0.4) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Custom scrollbars for data-dense interfaces */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--theme-bg, #0a0a0c);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--theme-border, #1e293b);
+  border-radius: 1px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary, #06b6d4);
+}
+
+/* =========================================================================
+   1. THEME: GRIMOIRE (FANTASÍA ÉPICA / PERGAMINO OSCURO & ORO BRUÑIDO)
+   ========================================================================= */
+body.theme-grimoire {
+  background-color: #0f0b07 !important;
+  color: #e6d8c3 !important;
+  font-family: 'EB Garamond', Georgia, serif !important;
+}
+
+body.theme-grimoire .app-theme-root {
+  background-color: #0f0b07 !important;
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(217, 119, 6, 0.08) 0%, transparent 60%),
+    radial-gradient(#2d1b0f 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px;
+  font-family: 'EB Garamond', Georgia, serif !important;
+}
+
+body.theme-grimoire h1, 
+body.theme-grimoire h2, 
+body.theme-grimoire h3, 
+body.theme-grimoire h4,
+body.theme-grimoire .font-mono {
+  font-family: 'Cinzel', 'EB Garamond', Georgia, serif !important;
+  letter-spacing: 0.03em;
+}
+
+body.theme-grimoire nav,
+body.theme-grimoire aside,
+body.theme-grimoire header,
+body.theme-grimoire .bg-\[\#0a0a0c\],
+body.theme-grimoire .bg-\[\#090a0f\],
+body.theme-grimoire .bg-\[\#070a0f\],
+body.theme-grimoire .bg-\[\#07090e\],
+body.theme-grimoire .bg-\[\#0b0e14\],
+body.theme-grimoire .bg-\[\#0d1017\],
+body.theme-grimoire .bg-\[\#0e1118\] {
+  background-color: #17100a !important;
+  border-color: #382414 !important;
+}
+
+body.theme-grimoire .border-\[\#1e293b\],
+body.theme-grimoire .border-slate-800 {
+  border-color: #382414 !important;
+}
+
+body.theme-grimoire .text-cyan-400 {
+  color: #f59e0b !important; /* Gold */
+}
+
+body.theme-grimoire .text-cyan-300 {
+  color: #fcd34d !important;
+}
+
+body.theme-grimoire .bg-cyan-500,
+body.theme-grimoire .bg-cyan-400 {
+  background-color: #f59e0b !important;
+  color: #0f0b07 !important;
+}
+
+body.theme-grimoire .border-cyan-400,
+body.theme-grimoire .border-cyan-500 {
+  border-color: #f59e0b !important;
+}
+
+body.theme-grimoire .bg-cyan-950\/20,
+body.theme-grimoire .bg-cyan-950\/40,
+body.theme-grimoire .bg-cyan-950\/60,
+body.theme-grimoire .bg-cyan-950 {
+  background-color: rgba(69, 39, 14, 0.5) !important;
+}
+
+body.theme-grimoire .selection\:bg-cyan-500\/30 *::selection {
+  background-color: rgba(245, 158, 11, 0.3) !important;
+  color: #fef3c7 !important;
+}
+
+/* =========================================================================
+   2. THEME: DETECTIVE (EXPEDIENTE NOIR / CARBÓN, AMARILLO & MÁQUINA DE ESCRIBIR)
+   ========================================================================= */
+body.theme-detective {
+  background-color: #0b0d11 !important;
+  color: #d1d9e6 !important;
+  font-family: 'Courier Prime', 'Fira Code', monospace !important;
+}
+
+body.theme-detective .app-theme-root {
+  background-color: #0b0d11 !important;
+  background-image: 
+    linear-gradient(to right, rgba(40, 50, 68, 0.22) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(40, 50, 68, 0.22) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family: 'Courier Prime', 'Fira Code', monospace !important;
+}
+
+body.theme-detective h1, 
+body.theme-detective h2, 
+body.theme-detective h3, 
+body.theme-detective h4,
+body.theme-detective .font-mono,
+body.theme-detective button,
+body.theme-detective input,
+body.theme-detective textarea {
+  font-family: 'Courier Prime', 'Fira Code', monospace !important;
+}
+
+body.theme-detective nav,
+body.theme-detective aside,
+body.theme-detective header,
+body.theme-detective .bg-\[\#0a0a0c\],
+body.theme-detective .bg-\[\#090a0f\],
+body.theme-detective .bg-\[\#070a0f\],
+body.theme-detective .bg-\[\#07090e\],
+body.theme-detective .bg-\[\#0b0e14\],
+body.theme-detective .bg-\[\#0d1017\],
+body.theme-detective .bg-\[\#0e1118\] {
+  background-color: #12161f !important;
+  border-color: #273142 !important;
+}
+
+body.theme-detective .border-\[\#1e293b\],
+body.theme-detective .border-slate-800 {
+  border-color: #273142 !important;
+}
+
+body.theme-detective .text-cyan-400 {
+  color: #eab308 !important; /* Caution tape yellow */
+}
+
+body.theme-detective .text-cyan-300 {
+  color: #fef08a !important;
+}
+
+body.theme-detective .bg-cyan-500,
+body.theme-detective .bg-cyan-400 {
+  background-color: #eab308 !important;
+  color: #0b0d11 !important;
+}
+
+body.theme-detective .border-cyan-400,
+body.theme-detective .border-cyan-500 {
+  border-color: #eab308 !important;
+}
+
+body.theme-detective .bg-cyan-950\/20,
+body.theme-detective .bg-cyan-950\/40,
+body.theme-detective .bg-cyan-950\/60,
+body.theme-detective .bg-cyan-950 {
+  background-color: rgba(53, 43, 10, 0.45) !important;
+}
+
+body.theme-detective .selection\:bg-cyan-500\/30 *::selection {
+  background-color: rgba(234, 179, 8, 0.3) !important;
+  color: #fef9c3 !important;
+}
+
+/* =========================================================================
+   3. THEME: VELVET (ROMANCE GÓTICO & DRAMA / VIOLETA & ROSA)
+   ========================================================================= */
+body.theme-velvet {
+  background-color: #100817 !important;
+  color: #f1e6f5 !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+body.theme-velvet .app-theme-root {
+  background-color: #100817 !important;
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(244, 63, 94, 0.08) 0%, transparent 65%),
+    radial-gradient(#2b133d 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+body.theme-velvet h1, 
+body.theme-velvet h2, 
+body.theme-velvet h3, 
+body.theme-velvet h4 {
+  font-family: 'Playfair Display', Georgia, serif !important;
+  letter-spacing: 0.01em;
+}
+
+body.theme-velvet nav,
+body.theme-velvet aside,
+body.theme-velvet header,
+body.theme-velvet .bg-\[\#0a0a0c\],
+body.theme-velvet .bg-\[\#090a0f\],
+body.theme-velvet .bg-\[\#070a0f\],
+body.theme-velvet .bg-\[\#07090e\],
+body.theme-velvet .bg-\[\#0b0e14\],
+body.theme-velvet .bg-\[\#0d1017\],
+body.theme-velvet .bg-\[\#0e1118\] {
+  background-color: #190c25 !important;
+  border-color: #3b1952 !important;
+}
+
+body.theme-velvet .border-\[\#1e293b\],
+body.theme-velvet .border-slate-800 {
+  border-color: #3b1952 !important;
+}
+
+body.theme-velvet .text-cyan-400 {
+  color: #fb7185 !important; /* Rose */
+}
+
+body.theme-velvet .text-cyan-300 {
+  color: #fda4af !important;
+}
+
+body.theme-velvet .bg-cyan-500,
+body.theme-velvet .bg-cyan-400 {
+  background-color: #fb7185 !important;
+  color: #100817 !important;
+}
+
+body.theme-velvet .border-cyan-400,
+body.theme-velvet .border-cyan-500 {
+  border-color: #fb7185 !important;
+}
+
+body.theme-velvet .bg-cyan-950\/20,
+body.theme-velvet .bg-cyan-950\/40,
+body.theme-velvet .bg-cyan-950\/60,
+body.theme-velvet .bg-cyan-950 {
+  background-color: rgba(69, 18, 55, 0.45) !important;
+}
+
+/* =========================================================================
+   4. THEME: PARCHMENT (CÓDICE HISTÓRICO / AZUL COBALTO IMPERIAL & SERIF)
+   ========================================================================= */
+body.theme-parchment {
+  background-color: #080c14 !important;
+  color: #e2e8f0 !important;
+  font-family: 'EB Garamond', Georgia, serif !important;
+}
+
+body.theme-parchment .app-theme-root {
+  background-color: #080c14 !important;
+  background-image: 
+    radial-gradient(ellipse at 50% 0%, rgba(56, 189, 248, 0.08) 0%, transparent 60%),
+    radial-gradient(#1a263c 1px, transparent 1px);
+  background-size: 100% 100%, 28px 28px;
+  font-family: 'EB Garamond', Georgia, serif !important;
+}
+
+body.theme-parchment h1, 
+body.theme-parchment h2, 
+body.theme-parchment h3, 
+body.theme-parchment h4,
+body.theme-parchment .font-mono {
+  font-family: 'Cinzel', 'EB Garamond', serif !important;
+  letter-spacing: 0.02em;
+}
+
+body.theme-parchment nav,
+body.theme-parchment aside,
+body.theme-parchment header,
+body.theme-parchment .bg-\[\#0a0a0c\],
+body.theme-parchment .bg-\[\#090a0f\],
+body.theme-parchment .bg-\[\#070a0f\],
+body.theme-parchment .bg-\[\#07090e\],
+body.theme-parchment .bg-\[\#0b0e14\],
+body.theme-parchment .bg-\[\#0d1017\],
+body.theme-parchment .bg-\[\#0e1118\] {
+  background-color: #0f1624 !important;
+  border-color: #1e304d !important;
+}
+
+body.theme-parchment .border-\[\#1e293b\],
+body.theme-parchment .border-slate-800 {
+  border-color: #1e304d !important;
+}
+
+body.theme-parchment .text-cyan-400 {
+  color: #38bdf8 !important; /* Sky / Cobalt */
+}
+
+body.theme-parchment .text-cyan-300 {
+  color: #7dd3fc !important;
+}
+
+body.theme-parchment .bg-cyan-500,
+body.theme-parchment .bg-cyan-400 {
+  background-color: #38bdf8 !important;
+  color: #080c14 !important;
+}
+
+body.theme-parchment .border-cyan-400,
+body.theme-parchment .border-cyan-500 {
+  border-color: #38bdf8 !important;
+}
+
+body.theme-parchment .bg-cyan-950\/20,
+body.theme-parchment .bg-cyan-950\/40,
+body.theme-parchment .bg-cyan-950\/60,
+body.theme-parchment .bg-cyan-950 {
+  background-color: rgba(14, 46, 75, 0.45) !important;
+}
+
+/* =========================================================================
+   5. THEME: MINIMALIST (ESTUDIO ZEN / OBSIDIAN MONOCROMO & ENFOQUE)
+   ========================================================================= */
+body.theme-minimalist {
+  background-color: #050608 !important;
+  color: #e2e8f0 !important;
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+}
+
+body.theme-minimalist .app-theme-root {
+  background-color: #050608 !important;
+  background-image: none !important;
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+}
+
+body.theme-minimalist h1, 
+body.theme-minimalist h2, 
+body.theme-minimalist h3, 
+body.theme-minimalist h4,
+body.theme-minimalist .font-mono {
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+  letter-spacing: -0.01em;
+}
+
+body.theme-minimalist nav,
+body.theme-minimalist aside,
+body.theme-minimalist header,
+body.theme-minimalist .bg-\[\#0a0a0c\],
+body.theme-minimalist .bg-\[\#090a0f\],
+body.theme-minimalist .bg-\[\#070a0f\],
+body.theme-minimalist .bg-\[\#07090e\],
+body.theme-minimalist .bg-\[\#0b0e14\],
+body.theme-minimalist .bg-\[\#0d1017\],
+body.theme-minimalist .bg-\[\#0e1118\] {
+  background-color: #0c0e12 !important;
+  border-color: #1f2530 !important;
+}
+
+body.theme-minimalist .border-\[\#1e293b\],
+body.theme-minimalist .border-slate-800 {
+  border-color: #1f2530 !important;
+}
+
+body.theme-minimalist .text-cyan-400 {
+  color: #f8fafc !important; /* Pure clean white */
+}
+
+body.theme-minimalist .text-cyan-300 {
+  color: #e2e8f0 !important;
+}
+
+body.theme-minimalist .bg-cyan-500,
+body.theme-minimalist .bg-cyan-400 {
+  background-color: #f8fafc !important;
+  color: #090a0f !important;
+}
+
+body.theme-minimalist .border-cyan-400,
+body.theme-minimalist .border-cyan-500 {
+  border-color: #f8fafc !important;
+}
+
+body.theme-minimalist .bg-cyan-950\/20,
+body.theme-minimalist .bg-cyan-950\/40,
+body.theme-minimalist .bg-cyan-950\/60,
+body.theme-minimalist .bg-cyan-950 {
+  background-color: rgba(30, 36, 48, 0.45) !important;
+}

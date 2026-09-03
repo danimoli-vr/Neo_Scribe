@@ -1,0 +1,7 @@
+{
+  "name": "Kernel del Vacío - Worldbuilding Studio",
+  "description": "Estudio de worldbuilding y coherencia narrativa para ópera espacial dura con sistema de tecnomagia basado en el Kernel de la Realidad a escala de Planck.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
