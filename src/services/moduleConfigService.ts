@@ -419,6 +419,15 @@ export function getEffectiveModulesConfig(): Record<ModuleId, CustomModuleConfig
       code: '01',
       category: 'writing'
     },
+    characters: {
+      id: 'characters',
+      title: terms.entityCharacters || 'Personajes',
+      desc: 'Fichas completas, roles dramáticos, facciones y arcos narrativos.',
+      enabled: true,
+      iconName: 'users',
+      code: '01b',
+      category: 'writing'
+    },
     graph: {
       id: 'graph',
       title: terms.graphTitle,

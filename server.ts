@@ -85,8 +85,9 @@ BORRADOR O ESCENA A AUDITAR:
 ${sceneText}
 """`;
 
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
     const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+      model,
       contents: prompt,
       config: {
         systemInstruction,
@@ -127,8 +128,9 @@ Formato de respuesta JSON estricto con los siguientes campos:
     const prompt = `Genera un elemento de categoría: "${category || "artefacto"}".
 Parámetros / Petición del autor: ${parameters || "Un artefacto precursor peligroso codiciado por la Ortodoxia del Root y la Alianza FOSS"}`;
 
+    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
     const response = await ai.models.generateContent({
-      model: "gemini-3.8-flash",
+      model,
       contents: prompt,
       config: {
         systemInstruction,

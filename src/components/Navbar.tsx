@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   Menu, Download, LayoutDashboard, Layers, BookOpen, 
   Network, Terminal, ShieldCheck, Globe, Users, HardDrive, 
-  Sparkles, Compass, Clock, Cloud, Palette, Sliders
+  Sparkles, Compass, Clock, Cloud, Palette, Sliders, Search
 } from 'lucide-react';
 import { useGenrePreset } from '../services/genrePresetService';
 import { useModuleConfig, MODULE_ICON_MAP } from '../services/moduleConfigService';
@@ -16,6 +16,7 @@ interface NavbarProps {
   onOpenStorageSync: () => void;
   onOpenGenreThemes?: () => void;
   onOpenWorldbuildingCustomizer?: () => void;
+  onOpenCommandPalette?: () => void;
   onToggleNavigation: () => void;
   inconsistenciesCount?: number;
   anachronismsCount?: number;
@@ -28,6 +29,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenStorageSync,
   onOpenGenreThemes,
   onOpenWorldbuildingCustomizer,
+  onOpenCommandPalette,
   onToggleNavigation,
   inconsistenciesCount = 0,
   anachronismsCount = 0
@@ -102,6 +104,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <LayoutDashboard className="w-3.5 h-3.5 text-slate-400" />
               <span className="hidden md:inline">Visión General</span>
+            </button>
+          )}
+
+          {/* Global Command Palette (Ctrl + K) */}
+          {onOpenCommandPalette && (
+            <button
+              onClick={onOpenCommandPalette}
+              className="px-2.5 py-1.5 rounded-sm bg-[#121420] hover:bg-[#1b1f30] text-slate-300 hover:text-cyan-300 border border-slate-700/80 hover:border-cyan-500/60 flex items-center gap-2 cursor-pointer transition-colors text-[11px]"
+              title="Abrir Paleta de Comandos Global (Ctrl + K)"
+            >
+              <Search className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden lg:inline text-slate-400">Buscar...</span>
+              <kbd className="hidden sm:inline-block px-1.5 py-0.2 text-[9px] font-mono bg-[#090b10] border border-slate-700 rounded text-cyan-400">
+                Ctrl K
+              </kbd>
             </button>
           )}
 

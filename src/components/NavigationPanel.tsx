@@ -82,6 +82,7 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
       label: sectionTitles.writing,
       items: [
         buildItem('chapters', true),
+        buildItem('characters'),
         buildItem('graph', true, inconsistenciesCount > 0 ? `${inconsistenciesCount}` : undefined),
         buildItem('timeline', true, anachronismsCount > 0 ? `${anachronismsCount}` : undefined),
         ...customModules.filter(m => m.category === 'writing').map(buildCustomItem)

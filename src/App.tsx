@@ -11,6 +11,8 @@ import { LoreGeneratorView } from './components/LoreGeneratorView';
 import { ChapterEditorView } from './components/ChapterEditorView';
 import { StoryRelationsGraphView } from './components/StoryRelationsGraphView';
 import { TimelineView } from './components/TimelineView';
+import { CharactersRosterView } from './components/CharactersRosterView';
+import { CommandPaletteModal } from './components/CommandPaletteModal';
 import { CustomModuleView } from './components/CustomModuleView';
 import { WorldbuildingExportModal } from './components/WorldbuildingExportModal';
 import { AutosaveStatusBadge } from './components/AutosaveStatusBadge';
@@ -48,17 +50,38 @@ export default function App() {
   const [auditorPrefillTitle, setAuditorPrefillTitle] = useState<string | undefined>(undefined);
   const [targetChapterNumber, setTargetChapterNumber] = useState<number | null>(null);
   const [timelineRefreshKey, setTimelineRefreshKey] = useState<number>(0);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
 
   const { terms, currentGenre, currentTheme } = useGenrePreset();
 
   // Characters from localStorage or fallback
-  const allCharacters = useMemo(() => {
+  const [characters, setCharacters] = useState<NovelCharacter[]>(() => {
     try {
       const saved = localStorage.getItem('krnl_characters_v1');
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return CANONICAL_CHARACTERS;
+  });
+
+  // Re-sync characters on refresh key change
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('krnl_characters_v1');
+      if (saved) setCharacters(JSON.parse(saved));
+    } catch (e) {}
   }, [timelineRefreshKey]);
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   // Lore items from localStorage or fallback
   const allLoreItems = useMemo(() => {
@@ -218,6 +241,7 @@ export default function App() {
           onOpenStorageSync={() => setIsStorageSyncOpen(true)}
           onOpenGenreThemes={() => setIsGenreThemesOpen(true)}
           onOpenWorldbuildingCustomizer={() => setIsCustomizerOpen(true)}
+          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onToggleNavigation={() => {
             // In mobile open drawer, in desktop toggle collapsed
             if (window.innerWidth < 1024) {
@@ -240,7 +264,7 @@ export default function App() {
                 onOpenGenreThemes={() => setIsGenreThemesOpen(true)}
                 onOpenWorldbuildingCustomizer={() => setIsCustomizerOpen(true)}
                 chapters={chapters}
-                characters={CANONICAL_CHARACTERS}
+                characters={characters}
                 starSystems={CANONICAL_STAR_SYSTEMS}
                 syscalls={CANONICAL_SYSCALLS}
                 exploits={CANONICAL_EXPLOITS}
@@ -256,6 +280,13 @@ export default function App() {
                 initialChapterNumber={targetChapterNumber}
               />
             )}
+            {activeTab === 'characters' && (
+              <CharactersRosterView
+                characters={characters}
+                setCharacters={setCharacters}
+                onOpenChapterEditor={() => setActiveTab('chapters')}
+              />
+            )}
             {activeTab === 'graph' && (
               <StoryRelationsGraphView 
                 onOpenChapterInEditor={handleOpenChapterInEditor}
@@ -265,7 +296,7 @@ export default function App() {
             {activeTab === 'timeline' && (
               <TimelineView 
                 chapters={chapters}
-                characters={CANONICAL_CHARACTERS}
+                characters={characters}
                 starSystems={CANONICAL_STAR_SYSTEMS}
                 syscalls={CANONICAL_SYSCALLS}
                 exploits={CANONICAL_EXPLOITS}
@@ -288,7 +319,7 @@ export default function App() {
                 initialSceneText={auditorPrefillText}
                 initialSceneTitle={auditorPrefillTitle}
                 chapters={chapters}
-                characters={CANONICAL_CHARACTERS}
+                characters={characters}
                 loreItems={allLoreItems}
                 customTimelineEvents={allCustomEvents}
               />
@@ -377,7 +408,7 @@ export default function App() {
         isOpen={isStorageSyncOpen}
         onClose={() => setIsStorageSyncOpen(false)}
         chapters={chapters}
-        characters={allCharacters}
+        characters={characters}
         customTimelineEvents={allCustomEvents}
         loreItems={allLoreItems}
       />
@@ -394,6 +425,26 @@ export default function App() {
         isOpen={isCustomizerOpen}
         onClose={() => setIsCustomizerOpen(false)}
         onNavigateToModule={(modId) => setActiveTab(modId)}
+      />
+
+      {/* Global Command Palette (Ctrl + K) */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        chapters={chapters}
+        characters={characters}
+        onSelectChapter={(chapNum) => {
+          setTargetChapterNumber(chapNum);
+          setActiveTab('chapters');
+        }}
+        onNavigateTab={(tabId) => setActiveTab(tabId)}
+        onOpenExport={() => setIsExportOpen(true)}
+        onOpenGenreThemes={() => setIsGenreThemesOpen(true)}
+        onOpenStorageSync={() => setIsStorageSyncOpen(true)}
+        onOpenAuditor={() => setActiveTab('auditor')}
+        onCreateNewChapter={() => {
+          setActiveTab('chapters');
+        }}
       />
     </div>
   );

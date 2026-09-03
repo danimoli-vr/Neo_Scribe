@@ -346,6 +346,7 @@ export interface VisualTheme {
 export type ModuleId = 
   | 'overview'
   | 'chapters'
+  | 'characters'
   | 'graph'
   | 'timeline'
   | 'architecture'
@@ -354,6 +355,24 @@ export type ModuleId =
   | 'lore'
   | 'sandbox'
   | 'auditor';
+
+export interface ChapterSnapshot {
+  id: string;
+  chapterId: string;
+  chapterNumber: number;
+  title: string;
+  content: string;
+  wordCount: number;
+  createdAt: string;
+  description: string;
+}
+
+export interface ManuscriptImportItem {
+  number: number;
+  title: string;
+  content: string;
+  wordCount: number;
+}
 
 export type ModuleCategory = 'main' | 'writing' | 'worldbuilding' | 'auditor';
 
