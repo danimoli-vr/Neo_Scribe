@@ -20,7 +20,6 @@ import { EditorMetricsStatusBarIndicator } from './components/EditorMetricsStatu
 import { StorageSyncModal } from './components/StorageSyncModal';
 import { GenreThemesModal } from './components/GenreThemesModal';
 import { WorldbuildingCustomizerModal } from './components/WorldbuildingCustomizerModal';
-import { autosaveService } from './services/autosaveService';
 import { syncAllToGoogleDrive, getAccessToken } from './services/googleDriveService';
 import { LocalDirectoryService } from './services/localDirectoryService';
 import { useGenrePreset } from './services/genrePresetService';
@@ -36,9 +35,27 @@ import {
 } from './data/canonicalLore';
 import { extractStoryGraph } from './utils/storyGraphExtractor';
 import { buildUnifiedTimeline, auditTimelineAnachronisms } from './utils/anachronismDetector';
-import { Chapter, NovelCharacter, StarSystem, Syscall, ExploitScript, Faction } from './types';
+import { readJSON, isArray } from './utils/safeStorage';
+import { StorageCorruptionBanner } from './components/StorageCorruptionBanner';
+import { NovelDataProvider, useNovelData } from './store/NovelDataContext';
+import { TimelineEvent } from './types';
 
 export default function App() {
+  return (
+    <NovelDataProvider>
+      <AppShell />
+    </NovelDataProvider>
+  );
+}
+
+function AppShell() {
+  const {
+    chapters,
+    characters,
+    loreItems: allLoreItems,
+    customTimelineEvents: allCustomEvents,
+    setChapters,
+  } = useNovelData();
   const [activeTab, setActiveTab] = useState<string>('overview');
   const [isExportOpen, setIsExportOpen] = useState<boolean>(false);
   const [isStorageSyncOpen, setIsStorageSyncOpen] = useState<boolean>(false);
@@ -49,27 +66,26 @@ export default function App() {
   const [auditorPrefillText, setAuditorPrefillText] = useState<string | undefined>(undefined);
   const [auditorPrefillTitle, setAuditorPrefillTitle] = useState<string | undefined>(undefined);
   const [targetChapterNumber, setTargetChapterNumber] = useState<number | null>(null);
-  const [timelineRefreshKey, setTimelineRefreshKey] = useState<number>(0);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState<boolean>(false);
+  const [driveNeedsReauth, setDriveNeedsReauth] = useState<boolean>(false);
 
   const { terms, currentGenre, currentTheme } = useGenrePreset();
 
-  // Characters from localStorage or fallback
-  const [characters, setCharacters] = useState<NovelCharacter[]>(() => {
-    try {
-      const saved = localStorage.getItem('krnl_characters_v1');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return CANONICAL_CHARACTERS;
-  });
-
-  // Re-sync characters on refresh key change
+  // Google Drive autosync is enabled but the in-memory OAuth token is gone
+  // (typically after a page reload) — surface it instead of failing silently.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('krnl_characters_v1');
-      if (saved) setCharacters(JSON.parse(saved));
-    } catch (e) {}
-  }, [timelineRefreshKey]);
+    const handleReauthNeeded = () => setDriveNeedsReauth(true);
+    window.addEventListener('krnl_drive_autosync_needs_reauth', handleReauthNeeded);
+    return () => window.removeEventListener('krnl_drive_autosync_needs_reauth', handleReauthNeeded);
+  }, []);
+
+  // Clear the reauth warning once the user reconnects (any successful sync clears it).
+  useEffect(() => {
+    if (!driveNeedsReauth) return;
+    const clearOnSync = () => setDriveNeedsReauth(false);
+    window.addEventListener('krnl_drive_reconnected', clearOnSync);
+    return () => window.removeEventListener('krnl_drive_reconnected', clearOnSync);
+  }, [driveNeedsReauth]);
 
   // Global Ctrl+K / Cmd+K listener
   useEffect(() => {
@@ -83,42 +99,19 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
-  // Lore items from localStorage or fallback
-  const allLoreItems = useMemo(() => {
-    try {
-      const saved = localStorage.getItem('krnl_lore_items_v1');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return INITIAL_LORE_ITEMS;
-  }, [timelineRefreshKey]);
-
-  // Custom events from localStorage
-  const allCustomEvents = useMemo(() => {
-    try {
-      const saved = localStorage.getItem('krnl_timeline_custom_events_v1');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [];
-  }, [timelineRefreshKey]);
-
-  // Re-read storage and handle optional background auto-syncs when autosave service commits changes
+  // Handle optional background auto-syncs to Drive/local folder when autosave service commits changes.
+  // (chapters/characters/loreItems/customTimelineEvents themselves come from NovelDataContext, which
+  // already refreshes on this same event — no re-reading needed here.)
   useEffect(() => {
     const handleStorageSynced = async () => {
-      setTimelineRefreshKey(k => k + 1);
-
       // Auto-sync to local folder if enabled
       if (localStorage.getItem('krnl_local_autosync_enabled') === 'true' && LocalDirectoryService.hasSelectedFolder()) {
         try {
-          const chs = JSON.parse(localStorage.getItem('krnl_chapters_v1') || '[]');
-          const chars = JSON.parse(localStorage.getItem('krnl_characters_v1') || '[]');
-          const events = JSON.parse(localStorage.getItem('krnl_timeline_custom_events_v1') || '[]');
-          const lores = JSON.parse(localStorage.getItem('krnl_lore_items_v1') || '[]');
-          await LocalDirectoryService.syncToLocalDirectory(
-            chs.length ? chs : INITIAL_CHAPTERS,
-            chars.length ? chars : CANONICAL_CHARACTERS,
-            events,
-            lores.length ? lores : INITIAL_LORE_ITEMS
-          );
+          const chs = readJSON('krnl_chapters_v1', INITIAL_CHAPTERS, isArray);
+          const chars = readJSON('krnl_characters_v1', CANONICAL_CHARACTERS, isArray);
+          const events = readJSON<TimelineEvent[]>('krnl_timeline_custom_events_v1', [], isArray);
+          const lores = readJSON('krnl_lore_items_v1', INITIAL_LORE_ITEMS, isArray);
+          await LocalDirectoryService.syncToLocalDirectory(chs, chars, events, lores);
         } catch (err) {
           console.warn('Auto local folder sync notice:', err);
         }
@@ -129,19 +122,22 @@ export default function App() {
         const token = await getAccessToken();
         if (token) {
           try {
-            const chs = JSON.parse(localStorage.getItem('krnl_chapters_v1') || '[]');
-            const chars = JSON.parse(localStorage.getItem('krnl_characters_v1') || '[]');
-            const events = JSON.parse(localStorage.getItem('krnl_timeline_custom_events_v1') || '[]');
-            const lores = JSON.parse(localStorage.getItem('krnl_lore_items_v1') || '[]');
-            await syncAllToGoogleDrive(
-              chs.length ? chs : INITIAL_CHAPTERS,
-              chars.length ? chars : CANONICAL_CHARACTERS,
-              events,
-              lores.length ? lores : INITIAL_LORE_ITEMS
-            );
+            const chs = readJSON('krnl_chapters_v1', INITIAL_CHAPTERS, isArray);
+            const chars = readJSON('krnl_characters_v1', CANONICAL_CHARACTERS, isArray);
+            const events = readJSON<TimelineEvent[]>('krnl_timeline_custom_events_v1', [], isArray);
+            const lores = readJSON('krnl_lore_items_v1', INITIAL_LORE_ITEMS, isArray);
+            await syncAllToGoogleDrive(chs, chars, events, lores);
           } catch (err) {
             console.warn('Auto Google Drive sync notice:', err);
           }
+        } else {
+          // Token missing even though the user enabled Drive autosync — most likely
+          // the Google OAuth access token expired after a page reload (it is only
+          // ever kept in memory). Surface this instead of silently doing nothing,
+          // so the user knows their chapters are NOT being backed up right now.
+          window.dispatchEvent(
+            new CustomEvent('krnl_drive_autosync_needs_reauth')
+          );
         }
       }
     };
@@ -154,19 +150,6 @@ export default function App() {
       window.removeEventListener('krnl_open_storage_sync', handleOpenStorageSyncEvent);
     };
   }, []);
-
-  // Load chapters from localStorage with fallback to canonical chapters
-  const chapters: Chapter[] = useMemo(() => {
-    const saved = localStorage.getItem('krnl_chapters_v1');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error loading chapters in App', e);
-      }
-    }
-    return INITIAL_CHAPTERS;
-  }, [activeTab, timelineRefreshKey]);
 
   // Compute graph data & inconsistency count for badges
   const graphSummary = useMemo(() => {
@@ -233,6 +216,23 @@ export default function App() {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
+        {/* Data-integrity & sync warnings (shown only when relevant) */}
+        <StorageCorruptionBanner />
+        {driveNeedsReauth && (
+          <div className="bg-amber-950/90 border-b border-amber-600/50 text-amber-200 px-4 py-2.5 text-xs sm:text-sm font-mono flex items-center gap-3">
+            <Cloud className="w-4 h-4 shrink-0 text-amber-400" />
+            <div className="flex-1">
+              La sincronización automática con Google Drive está activada pero tu sesión de Google expiró
+              (esto pasa al recargar la página). Tus capítulos NO se están respaldando en Drive ahora mismo.
+            </div>
+            <button
+              onClick={() => setIsStorageSyncOpen(true)}
+              className="shrink-0 px-2 py-1 rounded bg-amber-900/70 hover:bg-amber-800 border border-amber-500/40 text-amber-200 text-[11px] font-bold cursor-pointer"
+            >
+              Reconectar
+            </button>
+          </div>
+        )}
         {/* Streamlined Top Header */}
         <Navbar
           activeTab={activeTab}
@@ -282,8 +282,6 @@ export default function App() {
             )}
             {activeTab === 'characters' && (
               <CharactersRosterView
-                characters={characters}
-                setCharacters={setCharacters}
                 onOpenChapterEditor={() => setActiveTab('chapters')}
               />
             )}
@@ -304,9 +302,7 @@ export default function App() {
                 onOpenGraph={() => setActiveTab('graph')}
                 onSendToAuditor={handleSendToAuditor}
                 onUpdateChapter={(updated) => {
-                  const updatedChapters = chapters.map(c => c.id === updated.id ? updated : c);
-                  autosaveService.scheduleSave('krnl_chapters_v1', updatedChapters, true);
-                  setTimelineRefreshKey(k => k + 1);
+                  setChapters(chapters.map(c => c.id === updated.id ? updated : c), true);
                 }}
               />
             )}

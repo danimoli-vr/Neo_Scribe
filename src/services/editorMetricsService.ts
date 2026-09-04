@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { INITIAL_CHAPTERS } from '../data/canonicalLore';
 import { Chapter } from '../types';
+import { readJSON, isNonEmptyArray } from '../utils/safeStorage';
 
 export interface EditorMetrics {
   chapterId: string;
@@ -38,18 +39,7 @@ export const computeReadingTime = (words: number): number => {
 
 // Compute initial metrics from localStorage or initial chapters
 const getInitialMetrics = (): EditorMetrics => {
-  let chapters: Chapter[] = INITIAL_CHAPTERS;
-  try {
-    const saved = localStorage.getItem('krnl_chapters_v1');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        chapters = parsed;
-      }
-    }
-  } catch (e) {
-    console.error('Error reading chapters for metrics:', e);
-  }
+  const chapters: Chapter[] = readJSON('krnl_chapters_v1', INITIAL_CHAPTERS, isNonEmptyArray);
 
   const firstChap = chapters[0];
   const firstContent = firstChap?.content || '';

@@ -216,16 +216,35 @@ Neo_Scribe/
 ├── metadata.json                # Manifiesto de capacidades
 ├── firebase-applet-config.json  # Configuración de integración Firebase/Cloud
 │
+├── GEMINI.md                    # Convenciones de arquitectura para agentes de IA
+├── vitest.config.ts             # Configuración de tests (Vitest)
+│
 ├── src/
 │   ├── main.tsx                 # Montaje de React 19
-│   ├── App.tsx                  # Componente raíz, orquestador de vistas y estado
+│   ├── App.tsx                  # Componente raíz, orquestador de vistas y estado de UI
 │   ├── index.css                # Sistema de diseño, temas visuales y tokens CSS
 │   ├── types.ts                 # Definiciones de tipos TypeScript universales
 │   │
+│   ├── store/
+│   │   └── NovelDataContext.tsx        # Fuente única de verdad: capítulos, personajes, lore y eventos
+│   │
 │   ├── components/              # Vistas principales y componentes de la UI
-│   │   ├── ChapterEditorView.tsx           # Editor enriquecido de capítulos
-│   │   ├── StoryRelationsGraphView.tsx     # Grafo interactivo D3 de personajes y física
-│   │   ├── TimelineView.tsx                # Cronología y anacronismos temporales
+│   │   ├── ChapterEditorView.tsx           # Editor de capítulos (orquesta los 5 de abajo)
+│   │   │   ├── ChapterListSidebar.tsx          # Índice de capítulos filtrable
+│   │   │   ├── ChapterTextEditorPanel.tsx      # Toolbar + textarea + autocompletado
+│   │   │   ├── ChapterReferencePanel.tsx       # Matriz de referencias (5 pestañas)
+│   │   │   ├── NewCharacterModal.tsx           # Modal de alta de personaje
+│   │   │   └── ChapterSnapshotsModal.tsx       # Historial de instantáneas del capítulo
+│   │   ├── StoryRelationsGraphView.tsx     # Grafo interactivo D3 (orquesta los 2 de abajo)
+│   │   │   ├── GraphHeaderControls.tsx         # Cabecera, métricas y filtros
+│   │   │   └── GraphInspectorDrawer.tsx        # Panel de inconsistencias + inspector de nodo
+│   │   ├── TimelineView.tsx                # Cronología y anacronismos (orquesta los 5 de abajo)
+│   │   │   ├── EraNavigationStrip.tsx          # Franja de épocas cosmológicas
+│   │   │   ├── TimelineFilterBar.tsx           # Buscador y filtros
+│   │   │   ├── AnachronismAuditMatrix.tsx      # Radar de anacronismos con reconciliación
+│   │   │   ├── TimelineEventStream.tsx         # Flujo cronológico visual
+│   │   │   └── CreateTimelineEventModal.tsx    # Modal de nuevo hito
+│   │   ├── StorageCorruptionBanner.tsx     # Aviso de datos corruptos recuperados (ver GEMINI.md)
 │   │   ├── CoherenceAuditorView.tsx        # Auditor ontológico Gemini (Local + Web)
 │   │   ├── SubstrateArchitectureView.tsx   # Capas L0/L1/L2 del Sustrato de Planck
 │   │   ├── StarSystemsAtlasView.tsx        # Atlas cartográfico estelar
@@ -254,7 +273,7 @@ Neo_Scribe/
 │   ├── services/                # Servicios de lógica de negocio y persistencia
 │   │   ├── autosaveService.ts          # Motor de autoguardado con debounce y atajos
 │   │   ├── auditorPromptService.ts     # Generador de prompts ontológicos por género
-│   │   ├── editorMetricsService.ts     # Cálculo de palabras y tiempos de lectura
+│   │   ├── editorMetricsService.ts     # Cálculo de palabras y tiempos de lectura (+ test)
 │   │   ├── genrePresetService.ts       # Gestor del género y vocabulario activo
 │   │   ├── localDirectoryService.ts    # File System Access API para carpetas locales
 │   │   ├── googleDriveService.ts       # Integración con Google Drive
@@ -262,11 +281,17 @@ Neo_Scribe/
 │   │   └── userCustomModuleService.ts  # Almacenamiento de módulos personalizados
 │   │
 │   └── utils/                   # Utilidades matemáticas y algorítmicas
-│       ├── storyGraphExtractor.ts      # Extractor de grafo y detector de inconsistencias
-│       ├── anachronismDetector.ts      # Detección de paradojas y desplazamientos FTL
+│       ├── safeStorage.ts              # Lectura/escritura segura de localStorage (+ test)
+│       ├── storyGraphExtractor.ts      # Extractor de grafo y detector de inconsistencias (+ test)
+│       ├── anachronismDetector.ts      # Detección de paradojas y desplazamientos FTL (+ test)
 │       ├── googleDocsExporter.ts       # Generador de HTML para Docs y binarios .docx
 │       └── environment.ts              # Detección de entorno y APIs soportadas
 ```
+
+> 🤖 **¿Vas a tocar persistencia de datos o a ampliar una vista grande?** Lee
+> primero [`GEMINI.md`](GEMINI.md) — documenta las convenciones que salieron
+> de una refactorización completa del proyecto (capa de datos central, nunca
+> leer `localStorage` a pelo, cuándo dividir un componente, tests con Vitest).
 
 ---
 

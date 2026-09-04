@@ -1,28 +1,26 @@
 import React, { useState } from 'react';
-import { 
-  CANONICAL_AXIOMS, 
-  UNIVERSAL_CONSTANTS, 
-  CANONICAL_SYSCALLS, 
-  CANONICAL_EXPLOITS, 
-  CANONICAL_FACTIONS, 
-  CANONICAL_STAR_SYSTEMS, 
-  INITIAL_LORE_ITEMS,
-  CANONICAL_CHARACTERS,
-  INITIAL_CHAPTERS
+import {
+  CANONICAL_AXIOMS,
+  UNIVERSAL_CONSTANTS,
+  CANONICAL_SYSCALLS,
+  CANONICAL_EXPLOITS,
+  CANONICAL_FACTIONS,
+  CANONICAL_STAR_SYSTEMS,
+  INITIAL_LORE_ITEMS
 } from '../data/canonicalLore';
-import { NovelCharacter, Chapter } from '../types';
-import { 
-  Download, 
-  Copy, 
-  Check, 
-  FileText, 
-  Code, 
-  ExternalLink, 
-  FileDown, 
+import {
+  Download,
+  Copy,
+  Check,
+  FileText,
+  Code,
+  ExternalLink,
+  FileDown,
   Sparkles,
   HelpCircle
 } from 'lucide-react';
 import { generateGoogleDocsHtml, generateWordDocxBible } from '../utils/googleDocsExporter';
+import { useNovelData } from '../store/NovelDataContext';
 
 interface WorldbuildingExportModalProps {
   isOpen: boolean;
@@ -30,42 +28,13 @@ interface WorldbuildingExportModalProps {
 }
 
 export const WorldbuildingExportModal: React.FC<WorldbuildingExportModalProps> = ({ isOpen, onClose }) => {
+  const { chapters, characters } = useNovelData();
   const [copied, setCopied] = useState<boolean>(false);
   const [copiedRich, setCopiedRich] = useState<boolean>(false);
   const [isGeneratingDocx, setIsGeneratingDocx] = useState<boolean>(false);
   const [exportFormat, setExportFormat] = useState<'google-docs' | 'markdown' | 'html' | 'json'>('google-docs');
 
   if (!isOpen) return null;
-
-  // Retrieve current characters and chapters
-  const getStoredCharacters = (): NovelCharacter[] => {
-    try {
-      const saved = localStorage.getItem('krnl_characters_v1');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return CANONICAL_CHARACTERS;
-  };
-
-  const getStoredChapters = (): Chapter[] => {
-    try {
-      const saved = localStorage.getItem('krnl_chapters_v1');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_CHAPTERS;
-  };
-
-  const characters = getStoredCharacters();
-  const chapters = getStoredChapters();
 
   const generateMarkdownBible = (): string => {
     return `# BIBLIA DE WORLDBUILDING: EL KERNEL DEL VACÍO

@@ -5,19 +5,16 @@ import {
 } from 'lucide-react';
 import { NovelCharacter, Faction } from '../types';
 import { CANONICAL_FACTIONS } from '../data/canonicalLore';
-import { autosaveService } from '../services/autosaveService';
+import { useNovelData } from '../store/NovelDataContext';
 
 interface CharactersRosterViewProps {
-  characters: NovelCharacter[];
-  setCharacters: React.Dispatch<React.SetStateAction<NovelCharacter[]>>;
   onOpenChapterEditor?: () => void;
 }
 
 export const CharactersRosterView: React.FC<CharactersRosterViewProps> = ({
-  characters,
-  setCharacters,
   onOpenChapterEditor
 }) => {
+  const { characters, setCharacters } = useNovelData();
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFaction, setSelectedFaction] = useState<string>('TODAS');
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
@@ -124,8 +121,7 @@ export const CharactersRosterView: React.FC<CharactersRosterViewProps> = ({
       updatedList = [...characters, newChar];
     }
 
-    setCharacters(updatedList);
-    autosaveService.scheduleSave('krnl_characters_v1', updatedList);
+    setCharacters(updatedList, true);
     setIsEditModalOpen(false);
   };
 
@@ -137,8 +133,7 @@ export const CharactersRosterView: React.FC<CharactersRosterViewProps> = ({
     }
     if (confirm(`¿Estás seguro de eliminar al personaje "${charName}"? Esta acción se sincronizará con el autoguardado.`)) {
       const remaining = characters.filter(c => c.id !== charId);
-      setCharacters(remaining);
-      autosaveService.scheduleSave('krnl_characters_v1', remaining);
+      setCharacters(remaining, true);
     }
   };
 
@@ -151,8 +146,7 @@ export const CharactersRosterView: React.FC<CharactersRosterViewProps> = ({
       notes: `${char.notes ? char.notes + '\n' : ''}[Duplicado de ${char.name}]`
     };
     const nextList = [...characters, copy];
-    setCharacters(nextList);
-    autosaveService.scheduleSave('krnl_characters_v1', nextList);
+    setCharacters(nextList, true);
   };
 
   return (

@@ -74,6 +74,9 @@ export const signInWithGoogle = async (): Promise<{ user: User; accessToken: str
 
     cachedAccessToken = credential.accessToken;
     currentAuthUser = result.user;
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('krnl_drive_reconnected'));
+    }
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
     console.error('Sign in error:', error);

@@ -1,22 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { INITIAL_LORE_ITEMS } from '../data/canonicalLore';
 import { LoreItem } from '../types';
 import { Sparkles, HardDrive, Zap, AlertTriangle, Bookmark, Trash2, Plus, RefreshCw, Filter } from 'lucide-react';
-import { autosaveService } from '../services/autosaveService';
+import { useNovelData } from '../store/NovelDataContext';
 
 export const LoreGeneratorView: React.FC = () => {
-  const [items, setItems] = useState<LoreItem[]>(() => {
-    try {
-      const saved = localStorage.getItem('krnl_lore_items_v1');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error('Error loading lore items:', e);
-    }
-    return INITIAL_LORE_ITEMS;
-  });
+  const { loreItems: sharedItems, setLoreItems: setSharedItems } = useNovelData();
+  const [items, setItems] = useState<LoreItem[]>(sharedItems);
   const isInitialMount = useRef(true);
 
   useEffect(() => {
@@ -24,7 +13,7 @@ export const LoreGeneratorView: React.FC = () => {
       isInitialMount.current = false;
       return;
     }
-    autosaveService.scheduleSave('krnl_lore_items_v1', items);
+    setSharedItems(items);
   }, [items]);
 
   const [categoryFilter, setCategoryFilter] = useState<string>('TODOS');
