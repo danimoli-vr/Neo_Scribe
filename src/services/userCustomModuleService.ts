@@ -7,6 +7,7 @@ import {
   ModuleCategory 
 } from '../types';
 import { autosaveService } from './autosaveService';
+import { readJSON, writeJSON, isArray } from '../utils/safeStorage';
 
 const STORAGE_KEY = 'krnl_user_custom_modules_v1';
 const EVENT_NAME = 'krnl_custom_modules_changed';
@@ -222,25 +223,13 @@ export const CUSTOM_MODULE_PRESETS: CustomModulePresetTemplate[] = [
 ];
 
 function loadFromStorage(): UserCustomModule[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (err) {
-    console.warn('Error reading user custom modules:', err);
-    return [];
-  }
+  return readJSON<UserCustomModule[]>(STORAGE_KEY, [], isArray);
 }
 
 function saveToStorage(modules: UserCustomModule[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(modules));
-    autosaveService.scheduleSave(STORAGE_KEY, modules, true);
-    window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: modules }));
-  } catch (err) {
-    console.error('Error saving user custom modules:', err);
-  }
+  writeJSON(STORAGE_KEY, modules);
+  autosaveService.scheduleSave(STORAGE_KEY, modules, true);
+  window.dispatchEvent(new CustomEvent(EVENT_NAME, { detail: modules }));
 }
 
 export const userCustomModuleService = {

@@ -239,6 +239,7 @@ export interface StoryGraphNode {
   inconsistencyCount: number;
   radius: number;
   color: string;
+  connectedLinks?: StoryGraphLink[];
   // D3 force simulation properties
   index?: number;
   x?: number;
@@ -422,6 +423,14 @@ export interface UserCustomModule {
   createdAt: string;
   updatedAt: string;
 }
+
+export type SectionTitles = {
+  main?: string;
+  writing: string;
+  worldbuilding: string;
+  auditor: string;
+  [key: string]: string | undefined;
+};
 
 export interface WorldbuildingCustomization {
   modules: Partial<Record<ModuleId, Partial<CustomModuleConfig>>>;

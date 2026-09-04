@@ -1,20 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { LoreItem } from '../types';
 import { Sparkles, HardDrive, Zap, AlertTriangle, Bookmark, Trash2, Plus, RefreshCw, Filter } from 'lucide-react';
 import { useNovelData } from '../store/NovelDataContext';
+import { getActiveGenre } from '../services/genrePresetService';
 
 export const LoreGeneratorView: React.FC = () => {
-  const { loreItems: sharedItems, setLoreItems: setSharedItems } = useNovelData();
-  const [items, setItems] = useState<LoreItem[]>(sharedItems);
-  const isInitialMount = useRef(true);
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    setSharedItems(items);
-  }, [items]);
+  const { loreItems, setLoreItems } = useNovelData();
+  const currentGenre = getActiveGenre();
 
   const [categoryFilter, setCategoryFilter] = useState<string>('TODOS');
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
@@ -23,8 +15,8 @@ export const LoreGeneratorView: React.FC = () => {
   const [showGenModal, setShowGenModal] = useState<boolean>(false);
 
   const filteredItems = categoryFilter === 'TODOS'
-    ? items
-    : items.filter(it => it.category === categoryFilter);
+    ? loreItems
+    : loreItems.filter(it => it.category === categoryFilter);
 
   const handleGenerateLoreItem = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +28,8 @@ export const LoreGeneratorView: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category: selectedCategory,
-          parameters: promptInput || 'Un artefacto precursor peligroso en disputa entre los Arqueólogos FOSS y el Sacerdocio del Root'
+          parameters: promptInput || 'Un elemento crucial en disputa para la trama',
+          genreId: currentGenre.id
         })
       });
 
@@ -48,7 +41,7 @@ export const LoreGeneratorView: React.FC = () => {
           category: data.item.category || selectedCategory,
           createdAt: new Date().toISOString().split('T')[0]
         };
-        setItems([newItem, ...items]);
+        setLoreItems([newItem, ...loreItems], true);
         setShowGenModal(false);
         setPromptInput('');
       }
@@ -60,7 +53,7 @@ export const LoreGeneratorView: React.FC = () => {
   };
 
   const removeItem = (id: string) => {
-    setItems(items.filter(i => i.id !== id));
+    setLoreItems(loreItems.filter(i => i.id !== id), true);
   };
 
   return (

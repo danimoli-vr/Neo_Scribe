@@ -36,6 +36,7 @@ import {
   GenrePresetId 
 } from '../types';
 import { getActiveGenrePreset, getActiveGenreId } from './genrePresetService';
+import { readJSON, writeJSON, isObject } from '../utils/safeStorage';
 
 const STORAGE_CUSTOM_MODULES_KEY = 'krnl_module_customization_v2';
 
@@ -368,20 +369,16 @@ export const WORLDBUILDING_SCENARIOS: WorldbuildingScenarioPreset[] = [
 ];
 
 export function getRawCustomization(): WorldbuildingCustomization {
-  try {
-    const saved = localStorage.getItem(STORAGE_CUSTOM_MODULES_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-  } catch (e) {}
-  return { modules: {}, sectionTitles: {} };
+  return readJSON<WorldbuildingCustomization>(
+    STORAGE_CUSTOM_MODULES_KEY,
+    { modules: {}, sectionTitles: {} },
+    isObject
+  );
 }
 
 export function saveRawCustomization(data: WorldbuildingCustomization): void {
-  try {
-    localStorage.setItem(STORAGE_CUSTOM_MODULES_KEY, JSON.stringify(data));
-    window.dispatchEvent(new CustomEvent('krnl_module_config_changed'));
-  } catch (e) {}
+  writeJSON(STORAGE_CUSTOM_MODULES_KEY, data);
+  window.dispatchEvent(new CustomEvent('krnl_module_config_changed'));
 }
 
 export function resetRawCustomization(): void {

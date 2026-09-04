@@ -1,28 +1,41 @@
 import { useState, useEffect } from 'react';
 import { GenrePreset, VisualTheme, GenrePresetId, VisualThemeId, GenreTerms } from '../types';
 import { GENRE_PRESETS, VISUAL_THEMES } from '../data/genrePresets';
+import { readJSON, writeJSON } from '../utils/safeStorage';
 
 const STORAGE_GENRE_KEY = 'krnl_active_genre_preset_v1';
 const STORAGE_THEME_KEY = 'krnl_active_theme_v1';
 
 export function getActiveGenreId(): GenrePresetId {
+  let raw: string | null = null;
   try {
-    const saved = localStorage.getItem(STORAGE_GENRE_KEY) as GenrePresetId;
-    if (saved && GENRE_PRESETS[saved]) {
-      return saved;
-    }
-  } catch (e) {}
-  return 'scifi';
+    raw = localStorage.getItem(STORAGE_GENRE_KEY);
+  } catch {
+    return 'scifi';
+  }
+  if (!raw) return 'scifi';
+  if (raw in GENRE_PRESETS) return raw as GenrePresetId;
+  return readJSON<GenrePresetId>(
+    STORAGE_GENRE_KEY,
+    'scifi',
+    (val) => typeof val === 'string' && val in GENRE_PRESETS
+  );
 }
 
 export function getActiveThemeId(): VisualThemeId {
+  let raw: string | null = null;
   try {
-    const saved = localStorage.getItem(STORAGE_THEME_KEY) as VisualThemeId;
-    if (saved && VISUAL_THEMES[saved]) {
-      return saved;
-    }
-  } catch (e) {}
-  return 'cyber';
+    raw = localStorage.getItem(STORAGE_THEME_KEY);
+  } catch {
+    return 'cyber';
+  }
+  if (!raw) return 'cyber';
+  if (raw in VISUAL_THEMES) return raw as VisualThemeId;
+  return readJSON<VisualThemeId>(
+    STORAGE_THEME_KEY,
+    'cyber',
+    (val) => typeof val === 'string' && val in VISUAL_THEMES
+  );
 }
 
 export function getActiveGenrePreset(): GenrePreset {
@@ -45,12 +58,10 @@ export function setActiveGenre(presetId: GenrePresetId, alsoApplyDefaultTheme = 
   const preset = GENRE_PRESETS[presetId];
   if (!preset) return;
 
-  try {
-    localStorage.setItem(STORAGE_GENRE_KEY, presetId);
-    if (alsoApplyDefaultTheme) {
-      setActiveVisualTheme(preset.defaultThemeId);
-    }
-  } catch (e) {}
+  writeJSON(STORAGE_GENRE_KEY, presetId);
+  if (alsoApplyDefaultTheme) {
+    setActiveVisualTheme(preset.defaultThemeId);
+  }
 
   applyThemeToDOM(alsoApplyDefaultTheme ? preset.defaultThemeId : getActiveThemeId());
   window.dispatchEvent(new CustomEvent('krnl_genre_changed', { detail: { genreId: presetId } }));
@@ -60,9 +71,7 @@ export function setActiveVisualTheme(themeId: VisualThemeId): void {
   const theme = VISUAL_THEMES[themeId];
   if (!theme) return;
 
-  try {
-    localStorage.setItem(STORAGE_THEME_KEY, themeId);
-  } catch (e) {}
+  writeJSON(STORAGE_THEME_KEY, themeId);
 
   applyThemeToDOM(themeId);
   window.dispatchEvent(new CustomEvent('krnl_theme_changed', { detail: { themeId } }));

@@ -197,6 +197,8 @@ export const CoherenceAuditorView: React.FC<CoherenceAuditorViewProps> = ({
         body: JSON.stringify({
           sceneText,
           analysisType,
+          genreId: genre.id,
+          systemInstruction: fullAuditPrompt,
           contextConfig: {
             title: sceneTitle,
             genre: genre.name,

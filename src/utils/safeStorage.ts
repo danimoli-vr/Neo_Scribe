@@ -125,3 +125,8 @@ export function isNonEmptyArray(value: unknown): boolean {
 export function isArray(value: unknown): boolean {
   return Array.isArray(value);
 }
+
+/** Validator helper: value must be a non-null object (not an array). */
+export function isObject(value: unknown): boolean {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}

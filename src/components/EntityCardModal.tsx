@@ -291,7 +291,7 @@ export const EntityCardModal: React.FC<EntityCardModalProps> = ({
                   <>
                     <div className="bg-[#10121a] border border-[#1e293b] p-3 rounded-sm">
                       <div className="text-[10px] text-slate-500 uppercase">Capa del Sustrato</div>
-                      <div className="font-bold text-cyan-400">{matchedSyscall.layer}</div>
+                      <div className="font-bold text-cyan-400">{matchedSyscall.category}</div>
                     </div>
                     <div className="bg-[#10121a] border border-[#1e293b] p-3 rounded-sm">
                       <div className="text-[10px] text-slate-500 uppercase">Firma Hexadecimal</div>

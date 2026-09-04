@@ -6,6 +6,12 @@ un humano— sigan el mismo patrón en vez de reintroducir los problemas que se
 corrigieron. Léelo antes de tocar persistencia de datos o de añadir funciones
 grandes a una vista existente.
 
+## 0. Consulta obligatoria de `CHANGELOG.md` antes de proponer mejoras
+
+**Regla:** antes de proponer o ejecutar cualquier mejora general, refactorización o cambio arquitectónico en la aplicación, es **obligatorio leer detenidamente [`CHANGELOG.md`](CHANGELOG.md)**.
+
+**Por qué:** `CHANGELOG.md` documenta las **decisiones de diseño deliberadas** tomadas en iteraciones previas (persistencia segura mediante `safeStorage`, debounce de autoguardado a los 3s, desacoplamiento de género en el backend, modularización de vistas complejas sin mover estado, etc.). Consultar el changelog evita proponer "mejoras" que deshagan o modifiquen comportamientos que se decidieron intencionadamente por diseño.
+
 ## 1. Nunca leas `localStorage` directamente
 
 **Regla:** todo acceso a `localStorage` para datos de la novela (capítulos,
@@ -75,8 +81,10 @@ aplicado en `ChapterEditorView`, `TimelineView` y `StoryRelationsGraphView`):
   donde estaba — extraerla habría exigido `forwardRef`/`useImperativeHandle`
   sin reducir de verdad la complejidad).
 
-Candidatos pendientes con este mismo patrón si vuelven a crecer:
-`CustomModuleView.tsx` y `StorageSyncModal.tsx` (ambos > 800 líneas).
+- Componentes modularizados con este mismo patrón:
+  `CustomModuleView.tsx` (extraídos `CustomModuleItemDrawer.tsx`, `CustomModuleItemEditor.tsx`);
+  `WorldbuildingCustomizerModal.tsx` (extraídos `CustomizerScenariosTab.tsx`, `CustomizerModulesTab.tsx`, `CustomizerSectionsTab.tsx`, `CustomizerCustomTab.tsx`);
+  `StorageSyncModal.tsx` (extraídos `SyncOverviewTab.tsx`, `SyncLocalTab.tsx`, `SyncDriveTab.tsx`, `SyncBrowserTab.tsx`).
 
 ## 4. Hay tests — úsalos y amplíalos
 

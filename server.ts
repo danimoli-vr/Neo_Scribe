@@ -38,7 +38,13 @@ app.get("/api/health", (_req: Request, res: Response) => {
 // Coherence Auditor Endpoint
 app.post("/api/audit-coherence", async (req: Request, res: Response) => {
   try {
-    const { sceneText, analysisType, contextConfig } = req.body;
+    const { 
+      sceneText, 
+      analysisType, 
+      contextConfig, 
+      systemInstruction: clientInstruction, 
+      genreId 
+    } = req.body;
 
     if (!sceneText || typeof sceneText !== "string") {
       return res.status(400).json({ error: "sceneText is required" });
@@ -46,36 +52,51 @@ app.post("/api/audit-coherence", async (req: Request, res: Response) => {
 
     const ai = getGeminiClient();
 
-    const systemInstruction = `Eres el "Auditor del Kernel de la Realidad y Consultor de Físicas de Ópera Espacial", una IA especializada en el worldbuilding de esta novela.
-Tu misión es auditar borradores de escenas, mecánicas de combate, artefactos precursores o tramas para asegurar que NO HAYA INCOHERENCIAS con las reglas canónicas del universo del autor:
+    // Determine system instruction: prefer client-provided prompt if present
+    let systemInstruction = clientInstruction;
 
-REGLAS CANÓNICAS DEL MUNDO:
-1. EL SUSTRATO DE PLANCK (Kernel de la Realidad):
-   - Malla a escala de Planck que compila y ejecuta constantes universales (c, G, entropía, masa, inercia).
-   - No hay magia mística; todo es inyección de excepciones o sobreescritura de registros físicos locales.
-   - Conservación de energía/entropía: Si congelas algo forzando cero kelvin, la entropía no desaparece; debe descargarse a un registro adyacente (calor disipado masivo en el disipador del operador o radiación ambiental).
-
-2. INYECTORES Y DEPURADORES (Los operadores):
-   - Usan implantes de compilación neural, terminales rígidas blindadas ("slates de debug") o acoples directos a relés.
-   - No canalizan maná: compilan instrucciones bytecode de la realidad.
-
-3. COSTES Y LÍMITES TÉCNICOS:
-   - Compute / RAM de área: Límite de flops por m³ en cada sector. Si varios operadores compilan a la vez -> Throttling (caída de framerate en la física, objetos cayendo a tirones, retardo en la propagación de la luz/sonido, latencia cinemática).
-   - Memory Leaks: Procesos mal cerrados (ej. campos de inercia o blindajes sin garbage collection) fragmentan la métrica espacial -> dejan estática cuántica, espejismos geométricos, dolor neural a inyectores cercanos.
-   - Crash / Kernel Panic: Buffer overflows o fallos de cálculo -> Colapso de la física local (microvacíos de Planck, agujeros de gusano parásitos, desintegración de materia o muerte instantánea del inyector por SIGSEGV neural).
-   - Guerra de Exploits: Hackeo aplicado a la materia (desactivar inercia, parches moleculares en caliente en blindajes de naves, race conditions en motores de curvatura).
-
-4. FACCIONES:
-   - Arqueólogos FOSS / Código Abierto: Buscan desclasificar librerías para la humanidad, desensamblar artefactos y democratizar el acceso al Sustrato sin monopolios ontológicos.
-   - Ortodoxia Sacra / Sacerdocio del Root: Consideran que solo ellos poseen la clave criptográfica de Dios ("sudo root"), imponen DRM ontológico y persiguen a los depuradores como herejes que corrompen el orden sagrado.
-
+    if (!systemInstruction) {
+      if (genreId === "fantasy") {
+        systemInstruction = `Eres el "Archimaestre y Consultor Ontológico de Alta Fantasía", una IA especializada en el worldbuilding y coherencia narrativa de esta saga de fantasía.
+Tu misión es auditar borradores de escenas, sistemas mágicos, linajes y duelos para asegurar que NO HAYA INCOHERENCIAS con las reglas canónicas:
+1. Toda magia exige coste (energía vital, componentes, juramentos de sangre).
+2. Respeto estricto a las consecuencias políticas y heridas previas de los personajes.
+3. Causalidad y lógica interna sin 'Deus Ex Machina'.
 INSTRUCCIONES DE RESPUESTA:
-Evalúa el texto presentado y responde estructuradamente en Markdown en español:
-1. 📊 Dictamen de Coherencia: Puntuación de 0 a 100 y estado ("Física Estable", "Advertencia de Throttling/Leak", "Incoherencia Grave / Magia Injustificada").
-2. 🔬 Análisis de Física y Sustrato: ¿Respeta la conservación de recursos, límites de RAM de área, latencia de Planck y disipación de calor?
-3. ⚠️ Riesgos de Kernel Panic o Memory Leak: ¿Se consideraron los residuos cuánticos y los fallos de desbordamiento?
-4. ⚔️ Alineación con la Guerra de Exploits & Facciones: ¿El uso de la tecnomagia se percibe como ciberseguridad sobre la materia o cayó en cliché mágico?
-5. 💡 Sugerencias de Parche Narrativo (Diff Literario): Cambios específicos o detalles sensoriales recomendados para que la escena resuene con la estética hard sci-fi (ej: el zumbido de los implantes, el olor a ozono del throttling, la latencia de la luz al saturar el registro térmico).`;
+Evalúa el texto y responde estructuradamente en Markdown en español:
+1. 📊 Dictamen de Coherencia (Puntuación 0-100 y estado).
+2. 🔮 Análisis del Sistema Mágico y Costes.
+3. 👑 Consistencia de Facciones y Linajes.
+4. 💡 Sugerencias de Parche Narrativo (Diff Literario).`;
+      } else if (genreId === "noir") {
+        systemInstruction = `Eres el "Inspector Forense y Consultor de Novela Negra", una IA especializada en la coherencia de tramas policíacas, misterio y crimen.
+Tu misión es auditar borradores de escenas, interrogatorios y coartadas para asegurar que NO HAYA INCOHERENCIAS:
+1. Rigor temporal, distancias y traslados verosímiles entre locaciones.
+2. Fair Play: pistas accesibles y deducciones sustentadas en evidencias.
+3. Psicología de sospechosos coherente con sus motivos y secretos.
+INSTRUCCIONES DE RESPUESTA:
+Evalúa el texto y responde estructuradamente en Markdown en español:
+1. 📊 Dictamen de Coherencia (Puntuación 0-100 y estado).
+2. 🕵️ Análisis de Tiempos y Coartadas.
+3. 🔎 Rigor Forense y Procedimiento.
+4. 💡 Sugerencias de Parche Narrativo (Diff Literario).`;
+      } else {
+        // Default Sci-Fi / Planck Substrate
+        systemInstruction = `Eres el "Auditor del Kernel de la Realidad y Consultor de Físicas de Ópera Espacial", una IA especializada en el worldbuilding de esta novela.
+Tu misión es auditar borradores de escenas, mecánicas de combate, artefactos precursores o tramas para asegurar que NO HAYA INCOHERENCIAS con las reglas canónicas del universo del autor:
+1. EL SUSTRATO DE PLANCK: Malla a escala de Planck que compila y ejecuta constantes físicas. Conservación de energía y disipación de calor.
+2. INYECTORES Y DEPURADORES: Compilación bytecode de la materia con costes de RAM y compute de área.
+3. RIESGOS: Throttling de framerate físico, Memory Leaks, Buffer Overflows y Kernel Panic.
+4. FACCIONES: Arqueólogos FOSS vs Ortodoxia Sacra del Root.
+INSTRUCCIONES DE RESPUESTA:
+Evalúa el texto y responde estructuradamente en Markdown en español:
+1. 📊 Dictamen de Coherencia (Puntuación 0-100 y estado).
+2. 🔬 Análisis de Física y Sustrato.
+3. ⚠️ Riesgos de Kernel Panic o Memory Leak.
+4. ⚔️ Alineación con la Guerra de Exploits & Facciones.
+5. 💡 Sugerencias de Parche Narrativo (Diff Literario).`;
+      }
+    }
 
     const prompt = `Tipo de análisis solicitado: ${analysisType || "Auditoría General de Escena"}
 Configuración de contexto adicional: ${JSON.stringify(contextConfig || {})}
@@ -105,13 +126,44 @@ ${sceneText}
   }
 });
 
-// Precursor Artifact & Exploit Generator
+// Precursor Artifact & Lore Item Generator
 app.post("/api/generate-lore-item", async (req: Request, res: Response) => {
   try {
-    const { category, parameters } = req.body;
+    const { category, parameters, genreId } = req.body;
     const ai = getGeminiClient();
 
-    const systemInstruction = `Eres un diseñador de worldbuilding y mecánicas de ciencia ficción dura para una ópera espacial basada en el "Kernel de la Realidad" (malla a escala de Planck).
+    let systemInstruction = "";
+
+    if (genreId === "fantasy") {
+      systemInstruction = `Eres un diseñador de worldbuilding y sistemas arcanos para una saga de Alta Fantasía.
+Genera un elemento de lore altamente detallado y original.
+Formato de respuesta JSON estricto con los siguientes campos:
+{
+  "name": "Nombre místico o ceremonial del artefacto, pacto o criatura",
+  "category": "artefacto" | "exploit" | "anomalia" | "sistema_estelar",
+  "precursorArchitecture": "Escuela de magia, tradición arcana o plano de origen",
+  "technicalSpecs": "Coste de maná, tributo requerido o límite de uso",
+  "loreAndDiscovery": "Origen histórico, leyenda y facción o casa que lo codicia",
+  "exploitMechanic": "Efecto o encantamiento al ser invocado o desatado",
+  "failureMode": "Consecuencias de fallo, corrupción o reacción mágica descontrolada",
+  "narrativeHook": "Gancho argumental directo para un capítulo de la novela"
+}`;
+    } else if (genreId === "noir") {
+      systemInstruction = `Eres un consultor narrativo para una saga Noir / Ficción Criminal y Detectivesca.
+Genera un elemento de lore detallado y coherente con el género criminal.
+Formato de respuesta JSON estricto con los siguientes campos:
+{
+  "name": "Nombre del expediente, arma homicida, lugar turbio o pista clave",
+  "category": "artefacto" | "exploit" | "anomalia" | "sistema_estelar",
+  "precursorArchitecture": "Distrito, departamento policial o red criminal vinculada",
+  "technicalSpecs": "Especificaciones forenses, calibre o detalles periciales",
+  "loreAndDiscovery": "Quién lo descubrió, escena del hallazgo e implicados",
+  "exploitMechanic": "Modus operandi o método utilizado en el caso",
+  "failureMode": "Riesgo de encubrimiento, coartada falsa o testigo silenciado",
+  "narrativeHook": "Gancho argumental directo para un caso o capítulo"
+}`;
+    } else {
+      systemInstruction = `Eres un diseñador de worldbuilding y mecánicas de ciencia ficción dura para una ópera espacial basada en el "Kernel de la Realidad" (malla a escala de Planck).
 Genera un elemento de worldbuilding altamente detallado y original.
 Formato de respuesta JSON estricto con los siguientes campos:
 {
@@ -124,9 +176,10 @@ Formato de respuesta JSON estricto con los siguientes campos:
   "failureMode": "Qué ocurre en caso de Buffer Overflow, Crash o Memory Leak",
   "narrativeHook": "Gancho argumental directo para un capítulo del libro"
 }`;
+    }
 
     const prompt = `Genera un elemento de categoría: "${category || "artefacto"}".
-Parámetros / Petición del autor: ${parameters || "Un artefacto precursor peligroso codiciado por la Ortodoxia del Root y la Alianza FOSS"}`;
+Parámetros / Petición del autor: ${parameters || "Un elemento crucial en disputa"}`;
 
     const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
     const response = await ai.models.generateContent({

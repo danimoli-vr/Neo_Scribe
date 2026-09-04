@@ -40,7 +40,7 @@ export const NovelOverviewHub: React.FC<NovelOverviewHubProps> = ({
   const { modules, sectionTitles } = useModuleConfig();
   const { customModules } = useUserCustomModules();
   const totalWords = chapters.reduce((acc, c) => acc + (c.content ? c.content.trim().split(/\s+/).filter(Boolean).length : 0), 0);
-  const completedChapters = chapters.filter(c => c.status === 'FINAL' || c.status === 'REVISADO').length;
+  const completedChapters = chapters.filter(c => c.status === 'CANON').length;
 
   const buildItem = (
     id: ModuleId,
