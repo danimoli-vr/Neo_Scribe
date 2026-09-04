@@ -22,7 +22,8 @@ import { GenreThemesModal } from './components/GenreThemesModal';
 import { WorldbuildingCustomizerModal } from './components/WorldbuildingCustomizerModal';
 import { syncAllToGoogleDrive, getAccessToken } from './services/googleDriveService';
 import { LocalDirectoryService } from './services/localDirectoryService';
-import { useGenrePreset } from './services/genrePresetService';
+import { useGenrePreset, getActiveGenreId } from './services/genrePresetService';
+import { GENRE_PRESETS } from './data/genrePresets';
 import { Cloud, HardDrive, Palette } from 'lucide-react';
 import { 
   INITIAL_CHAPTERS, 
@@ -35,7 +36,7 @@ import {
 } from './data/canonicalLore';
 import { extractStoryGraph } from './utils/storyGraphExtractor';
 import { buildUnifiedTimeline, auditTimelineAnachronisms } from './utils/anachronismDetector';
-import { readJSON, isArray } from './utils/safeStorage';
+import { readJSON, isArray, isObject } from './utils/safeStorage';
 import { StorageCorruptionBanner } from './components/StorageCorruptionBanner';
 import { NovelDataProvider, useNovelData } from './store/NovelDataContext';
 import { TimelineEvent } from './types';
@@ -104,6 +105,18 @@ function AppShell() {
   // already refreshes on this same event — no re-reading needed here.)
   useEffect(() => {
     const handleStorageSynced = async () => {
+      // Same key/shape NovelDataContext uses for the author's chosen bible
+      // title (see its `NovelMeta`); read directly here since this handler
+      // runs off a window event with an empty dependency array, same as the
+      // chapters/characters/etc. reads right below — using the `terms` from
+      // the hook's closure would go stale after a genre switch, so this
+      // re-reads the active preset directly instead. Falls back to that
+      // preset's name, never a hardcoded universe name, when the author
+      // hasn't set their own title yet.
+      const novelMeta = readJSON<{ title?: string }>('krnl_novel_meta_v1', { title: '' }, isObject);
+      const activePreset = GENRE_PRESETS[getActiveGenreId()] || GENRE_PRESETS.scifi;
+      const novelTitle = novelMeta.title?.trim() || activePreset.terms.appName;
+
       // Auto-sync to local folder if enabled
       if (localStorage.getItem('krnl_local_autosync_enabled') === 'true' && LocalDirectoryService.hasSelectedFolder()) {
         try {
@@ -111,7 +124,7 @@ function AppShell() {
           const chars = readJSON('krnl_characters_v1', CANONICAL_CHARACTERS, isArray);
           const events = readJSON<TimelineEvent[]>('krnl_timeline_custom_events_v1', [], isArray);
           const lores = readJSON('krnl_lore_items_v1', INITIAL_LORE_ITEMS, isArray);
-          await LocalDirectoryService.syncToLocalDirectory(chs, chars, events, lores);
+          await LocalDirectoryService.syncToLocalDirectory(chs, chars, events, lores, novelTitle);
         } catch (err) {
           console.warn('Auto local folder sync notice:', err);
         }
@@ -126,7 +139,7 @@ function AppShell() {
             const chars = readJSON('krnl_characters_v1', CANONICAL_CHARACTERS, isArray);
             const events = readJSON<TimelineEvent[]>('krnl_timeline_custom_events_v1', [], isArray);
             const lores = readJSON('krnl_lore_items_v1', INITIAL_LORE_ITEMS, isArray);
-            await syncAllToGoogleDrive(chs, chars, events, lores);
+            await syncAllToGoogleDrive(chs, chars, events, lores, novelTitle);
           } catch (err) {
             console.warn('Auto Google Drive sync notice:', err);
           }

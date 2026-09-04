@@ -1,6 +1,6 @@
 {
-  "name": "Kernel del Vacío - Worldbuilding Studio",
-  "description": "Estudio de worldbuilding y coherencia narrativa para ópera espacial dura con sistema de tecnomagia basado en el Kernel de la Realidad a escala de Planck.",
+  "name": "Neo_Scribe - Suite de Worldbuilding & Coherencia Narrativa",
+  "description": "Suite de autor para novelas complejas: editor de capítulos, grafo de relaciones, línea temporal y auditor de coherencia narrativa con IA, agnóstica de género.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

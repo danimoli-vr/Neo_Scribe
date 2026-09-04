@@ -1,6 +1,6 @@
-# 🌌 Neo_Scribe // Kernel del Vacío
+# 🌌 Neo_Scribe
 
-> **Estudio Integral de Worldbuilding, Escritura de Novelas y Auditoría Ontológica con Inteligencia Artificial**
+> **Suite de autor para novelas complejas: editor de capítulos, worldbuilding con grafo de relaciones, línea temporal y un auditor de coherencia narrativa con IA — agnóstica de género.**
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![React](https://img.shields.io/badge/React-19-61dafb.svg?logo=react)
@@ -15,7 +15,7 @@
 ## 📖 Índice
 
 1. [Visión General](#-visión-general)
-2. [El Universo Canónico: "Kernel del Vacío"](#-el-universo-canónico-kernel-del-vacío)
+2. [Contenido de Ejemplo Incluido: "Kernel del Vacío"](#-contenido-de-ejemplo-incluido-kernel-del-vacío)
 3. [Módulos y Capacidades del Sistema](#-módulos-y-capacidades-del-sistema)
    - [✍️ Estudio de Escritura de Capítulos](#1-estudio-de-escritura-de-capítulos-chaptereditorview)
    - [🌐 Grafo de Relaciones & Detector de Incoherencias (D3.js)](#2-grafo-de-relaciones--detector-de-incoherencias-d3js)
@@ -39,20 +39,24 @@
 
 ## 🪐 Visión General
 
-**Neo_Scribe** es una suite de autor concebida para escritores de **ciencia ficción dura**, **ópera espacial** y **fantasía compleja**, diseñada para resolver el mayor desafío de las obras extensas: **la coherencia interna, el rigor causal y la continuidad ontológica**.
+**Neo_Scribe** es una suite de autor para escritores de novelas extensas y con reglas de mundo complejas (ciencia ficción dura, ópera espacial, alta fantasía, ficción histórica, etc.), diseñada para resolver el mayor desafío de las obras largas: **la coherencia interna, el rigor causal y la continuidad de tu propio worldbuilding a lo largo de cientos de páginas**.
 
 A diferencia de procesadores de texto convencionales o wikis estáticas, Neo_Scribe integra:
-- Un **editor literario enriquecido** con autocompletado diegético (`@` para personajes, `/` para conceptos y tecnomagia).
-- Un **grafo de fuerzas D3** que rastrea la interacción entre personajes, planetas y tecnologías capítulo a capítulo.
-- Un **motor de auditoría causal** que detecta anacronismos temporales y viajes superlumínicos físicamente imposibles.
-- Un **Auditor con IA (Google Gemini)** que evalúa borradores contra las leyes físicas y reglas del universo, proporcionando dictámenes y parches narrativos (diffs literarios).
-- Un **motor agnóstico de géneros** que permite transformar toda la interfaz, glosario y personalidad de la IA para Alta Fantasía, Cyberpunk, Noir, Ficción Histórica o Romance.
+- Un **editor literario enriquecido** con autocompletado diegético (`@` para personajes, `/` para conceptos y reglas del mundo que tú definas).
+- Un **grafo de fuerzas D3** que rastrea la interacción entre personajes, lugares y elementos de tu universo capítulo a capítulo.
+- Un **motor de auditoría causal** que detecta anacronismos temporales y violaciones de las reglas de tu propio mundo.
+- Un **Auditor con IA (Google Gemini)** que evalúa borradores contra las reglas de tu universo, proporcionando dictámenes y parches narrativos (diffs literarios).
+- Un **motor agnóstico de géneros**: toda la interfaz, el glosario y la personalidad de la IA mutan por completo según el género — Ciencia Ficción, Alta Fantasía, Cyberpunk/Noir, Ficción Histórica o Romance — o según un preset propio que definas tú (ver [sección 10](#10--motor-de-géneros-y-temas-visuales)).
+
+El proyecto se distribuye con un universo de ejemplo precargado, **"Kernel del Vacío"**, para que puedas ver todos los módulos funcionando con datos reales desde el primer minuto — no es el tema de la aplicación, es contenido de demostración que puedes editar, sustituir o borrar por completo.
 
 ---
 
-## ⚡ El Universo Canónico: "Kernel del Vacío"
+## 🎭 Contenido de Ejemplo Incluido: "Kernel del Vacío"
 
-Por defecto, la suite viene precargada con la biblia de lore de **"Kernel del Vacío"**, un universo de ciencia ficción dura con reglas rigurosas:
+> Esta sección describe el **universo de demostración** que viene precargado, no una limitación de la herramienta. Puedes vaciarlo o reemplazarlo por tu propio lore desde el primer momento (ver [Motor de Géneros y Temas Visuales](#10--motor-de-géneros-y-temas-visuales)).
+
+Por defecto, la suite viene precargada con la biblia de lore de **"Kernel del Vacío"**, un universo de ciencia ficción dura con reglas rigurosas, pensado como ejemplo de cuánto detalle puede modelar el sistema:
 
 1. **El Sustrato de Planck (Kernel de la Realidad):**
    - Una malla a escala de Planck que compila y ejecuta constantes universales ($c$, $G$, $\hbar$, entropía, masa, inercia).

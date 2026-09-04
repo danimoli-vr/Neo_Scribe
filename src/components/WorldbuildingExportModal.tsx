@@ -21,6 +21,8 @@ import {
 } from 'lucide-react';
 import { generateGoogleDocsHtml, generateWordDocxBible } from '../utils/googleDocsExporter';
 import { useNovelData } from '../store/NovelDataContext';
+import { useGenrePreset } from '../services/genrePresetService';
+import { slugify } from '../utils/slugify';
 
 interface WorldbuildingExportModalProps {
   isOpen: boolean;
@@ -28,16 +30,37 @@ interface WorldbuildingExportModalProps {
 }
 
 export const WorldbuildingExportModal: React.FC<WorldbuildingExportModalProps> = ({ isOpen, onClose }) => {
-  const { chapters, characters } = useNovelData();
+  const { chapters, characters, novelTitle, setNovelTitle } = useNovelData();
+  const { terms } = useGenrePreset();
   const [copied, setCopied] = useState<boolean>(false);
   const [copiedRich, setCopiedRich] = useState<boolean>(false);
   const [isGeneratingDocx, setIsGeneratingDocx] = useState<boolean>(false);
   const [exportFormat, setExportFormat] = useState<'google-docs' | 'markdown' | 'html' | 'json'>('google-docs');
+  // Local draft so typing feels instant; only re-seeded from the saved value
+  // when the modal opens (same pattern as the chapter editor's textarea —
+  // see GEMINI.md #2 — this field just isn't hot enough to need it, but the
+  // "don't fight the debounce while typing" part still applies).
+  const [titleDraft, setTitleDraft] = useState<string>(novelTitle);
+
+  React.useEffect(() => {
+    if (isOpen) setTitleDraft(novelTitle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
+  // What every export actually uses as the document's title: the author's
+  // own choice if they've set one, otherwise the name of their active
+  // genre/project preset (never a hardcoded universe name).
+  const bibleTitle = titleDraft.trim() || terms.appName;
+
+  const handleTitleChange = (value: string) => {
+    setTitleDraft(value);
+    setNovelTitle(value);
+  };
+
   const generateMarkdownBible = (): string => {
-    return `# BIBLIA DE WORLDBUILDING: EL KERNEL DEL VACÍO
+    return `# BIBLIA DE WORLDBUILDING: ${bibleTitle.toUpperCase()}
 **Proyecto de Ópera Espacial Dura**
 *Documento canónico de físicas, tecnomagia basada en el sustrato de Planck, facciones y leyes estelares.*
 
@@ -178,7 +201,7 @@ ${INITIAL_LORE_ITEMS.map(item => `### ${item.name} [${item.category.toUpperCase(
 
   const generateJsonData = (): string => {
     return JSON.stringify({
-      title: 'Biblia de Worldbuilding: El Kernel del Vacío',
+      title: `Biblia de Worldbuilding: ${bibleTitle}`,
       exportedAt: new Date().toISOString(),
       axioms: CANONICAL_AXIOMS,
       constants: UNIVERSAL_CONSTANTS,
@@ -192,9 +215,10 @@ ${INITIAL_LORE_ITEMS.map(item => `### ${item.name} [${item.category.toUpperCase(
     }, null, 2);
   };
 
-  const googleDocsHtml = generateGoogleDocsHtml(characters, chapters);
+  const googleDocsHtml = generateGoogleDocsHtml(characters, chapters, bibleTitle);
   const markdownContent = generateMarkdownBible();
   const jsonContent = generateJsonData();
+  const fileBaseName = slugify(bibleTitle, 'Biblia_de_Worldbuilding');
 
   // Handle standard clipboard text copy
   const handleCopy = () => {
@@ -232,11 +256,11 @@ ${INITIAL_LORE_ITEMS.map(item => `### ${item.name} [${item.category.toUpperCase(
   const handleDownloadDocx = async () => {
     try {
       setIsGeneratingDocx(true);
-      const docxBlob = await generateWordDocxBible(characters, chapters);
+      const docxBlob = await generateWordDocxBible(characters, chapters, bibleTitle);
       const url = URL.createObjectURL(docxBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'Biblia_Worldbuilding_Kernel_del_Vacio_GoogleDocs.docx';
+      link.download = `${fileBaseName}_GoogleDocs.docx`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -258,20 +282,20 @@ ${INITIAL_LORE_ITEMS.map(item => `### ${item.name} [${item.category.toUpperCase(
 
     let content = '';
     let mimeType = 'text/plain;charset=utf-8';
-    let fileName = 'Biblia_Worldbuilding_Kernel_del_Vacio.md';
+    let fileName = `${fileBaseName}.md`;
 
     if (exportFormat === 'html') {
       content = googleDocsHtml;
       mimeType = 'text/html;charset=utf-8';
-      fileName = 'Biblia_Worldbuilding_Kernel_del_Vacio_GoogleDocs.html';
+      fileName = `${fileBaseName}_GoogleDocs.html`;
     } else if (exportFormat === 'markdown') {
       content = markdownContent;
       mimeType = 'text/markdown;charset=utf-8';
-      fileName = 'Biblia_Worldbuilding_Kernel_del_Vacio.md';
+      fileName = `${fileBaseName}.md`;
     } else {
       content = jsonContent;
       mimeType = 'application/json;charset=utf-8';
-      fileName = 'kernel_worldbuilding_data.json';
+      fileName = `${fileBaseName}_worldbuilding_data.json`;
     }
 
     const blob = new Blob([content], { type: mimeType });
@@ -313,6 +337,25 @@ ${INITIAL_LORE_ITEMS.map(item => `### ${item.name} [${item.category.toUpperCase(
             >
               ✕
             </button>
+          </div>
+
+          {/* Bible Title — fully author-defined, defaults to the active preset's name */}
+          <div className="mb-4">
+            <label htmlFor="bible-title-input" className="block text-[10px] font-mono uppercase tracking-wider text-slate-500 mb-1">
+              Título de tu Biblia
+            </label>
+            <input
+              id="bible-title-input"
+              type="text"
+              value={titleDraft}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              placeholder={terms.appName}
+              maxLength={120}
+              className="w-full px-3 py-2 rounded-sm bg-[#0a0a0c] border border-[#1e293b] focus:border-cyan-500/70 outline-none text-sm font-mono text-white placeholder:text-slate-600 transition-colors"
+            />
+            <p className="text-[10px] font-mono text-slate-500 mt-1">
+              Aparece en todas las exportaciones (Google Docs, Markdown, JSON) y en el nombre del archivo descargado. Déjalo vacío para usar el nombre de tu proyecto activo (<span className="text-slate-400">{terms.appName}</span>).
+            </p>
           </div>
 
           {/* Format Selector Tabs */}
@@ -435,7 +478,7 @@ ${INITIAL_LORE_ITEMS.map(item => `### ${item.name} [${item.category.toUpperCase(
               <div className="text-slate-300 space-y-4 font-sans max-w-3xl mx-auto">
                 <div className="text-center pb-4 border-b border-[#1e293b]">
                   <h1 className="text-xl font-bold text-blue-400 tracking-wider">
-                    BIBLIA DE WORLDBUILDING: EL KERNEL DEL VACÍO
+                    BIBLIA DE WORLDBUILDING: {bibleTitle.toUpperCase()}
                   </h1>
                   <p className="text-xs text-slate-400 italic mt-1">
                     Proyecto de Ópera Espacial Dura // Tecnomagia basada en el Sustrato de Planck

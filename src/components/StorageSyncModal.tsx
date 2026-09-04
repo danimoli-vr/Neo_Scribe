@@ -18,6 +18,8 @@ import { LocalDirectoryService } from '../services/localDirectoryService';
 import { Chapter, NovelCharacter, TimelineEvent, LoreItem } from '../types';
 import { User } from 'firebase/auth';
 import { detectEnvironment, setSimulatedEnvironment, DesktopBridgeInfo } from '../utils/environment';
+import { useNovelData } from '../store/NovelDataContext';
+import { useGenrePreset } from '../services/genrePresetService';
 import { SyncOverviewTab } from './SyncOverviewTab';
 import { SyncDriveTab } from './SyncDriveTab';
 import { SyncLocalTab } from './SyncLocalTab';
@@ -40,6 +42,12 @@ export const StorageSyncModal: React.FC<StorageSyncModalProps> = ({
   customTimelineEvents = [],
   loreItems = []
 }) => {
+  // Author's chosen title for their bible/manuscript (falls back to the
+  // active preset's name — never a hardcoded universe name — when unset).
+  const { novelTitle } = useNovelData();
+  const { terms } = useGenrePreset();
+  const effectiveNovelTitle = novelTitle.trim() || terms.appName;
+
   // Active sub-tab in modal
   const [activeTab, setActiveTab] = useState<'overview' | 'drive' | 'local' | 'browser'>('overview');
 
@@ -151,7 +159,7 @@ export const StorageSyncModal: React.FC<StorageSyncModalProps> = ({
     setIsDriveSyncing(true);
     setDriveError(null);
     try {
-      const result = await syncAllToGoogleDrive(chapters, characters, customTimelineEvents, loreItems);
+      const result = await syncAllToGoogleDrive(chapters, characters, customTimelineEvents, loreItems, effectiveNovelTitle);
       if (result.success) {
         setDriveSyncSuccess(true);
         setDriveSyncFiles(result.files);
@@ -188,7 +196,7 @@ export const StorageSyncModal: React.FC<StorageSyncModalProps> = ({
     setIsLocalSyncing(true);
     setLocalError(null);
     try {
-      const res = await LocalDirectoryService.syncToLocalDirectory(chapters, characters, customTimelineEvents, loreItems);
+      const res = await LocalDirectoryService.syncToLocalDirectory(chapters, characters, customTimelineEvents, loreItems, effectiveNovelTitle);
       if (res.success) {
         setLocalFilesSaved(res.filesSaved);
       } else {
@@ -209,7 +217,7 @@ export const StorageSyncModal: React.FC<StorageSyncModalProps> = ({
 
   // Direct Download JSON
   const handleDownloadDirectBundle = () => {
-    LocalDirectoryService.exportDirectJsonBundle(chapters, characters, customTimelineEvents, loreItems);
+    LocalDirectoryService.exportDirectJsonBundle(chapters, characters, customTimelineEvents, loreItems, effectiveNovelTitle);
   };
 
   if (!isOpen) return null;

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Chapter, NovelCharacter, LoreItem, TimelineEvent } from '../types';
 import { INITIAL_CHAPTERS, CANONICAL_CHARACTERS, INITIAL_LORE_ITEMS } from '../data/canonicalLore';
-import { readJSON, isArray } from '../utils/safeStorage';
+import { readJSON, isArray, isObject } from '../utils/safeStorage';
 import { autosaveService } from '../services/autosaveService';
 
 /**
@@ -39,17 +39,37 @@ const CHAPTERS_KEY = 'krnl_chapters_v1';
 const CHARACTERS_KEY = 'krnl_characters_v1';
 const LORE_KEY = 'krnl_lore_items_v1';
 const EVENTS_KEY = 'krnl_timeline_custom_events_v1';
+const NOVEL_META_KEY = 'krnl_novel_meta_v1';
+
+/**
+ * Stored as `{ title }` (an object) rather than a bare string. `autosaveService`
+ * writes string values to localStorage verbatim instead of JSON-encoding them
+ * (see its `executeStorageWrite`), which would make a raw title string invalid
+ * JSON for `readJSON` to parse back — every save would look like corruption.
+ * Wrapping it in an object routes it through the normal `JSON.stringify` path
+ * used by every other key here.
+ */
+interface NovelMeta {
+  title: string;
+}
+
+function isNovelMeta(value: unknown): value is NovelMeta {
+  return isObject(value) && typeof (value as { title?: unknown }).title === 'string';
+}
 
 export interface NovelDataContextValue {
   chapters: Chapter[];
   characters: NovelCharacter[];
   loreItems: LoreItem[];
   customTimelineEvents: TimelineEvent[];
+  /** User-chosen title for their novel/worldbuilding bible. Empty string means "not set yet". */
+  novelTitle: string;
   /** Persists `next` and (once the write lands) updates `chapters` for every consumer. */
   setChapters: (next: Chapter[], immediate?: boolean) => void;
   setCharacters: (next: NovelCharacter[], immediate?: boolean) => void;
   setLoreItems: (next: LoreItem[], immediate?: boolean) => void;
   setCustomTimelineEvents: (next: TimelineEvent[], immediate?: boolean) => void;
+  setNovelTitle: (next: string, immediate?: boolean) => void;
 }
 
 const NovelDataContext = createContext<NovelDataContextValue | null>(null);
@@ -66,6 +86,9 @@ export const NovelDataProvider: React.FC<{ children: ReactNode }> = ({ children 
   );
   const [customTimelineEvents, setCustomTimelineEventsState] = useState<TimelineEvent[]>(() =>
     readJSON<TimelineEvent[]>(EVENTS_KEY, [], isArray)
+  );
+  const [novelMeta, setNovelMetaState] = useState<NovelMeta>(() =>
+    readJSON<NovelMeta>(NOVEL_META_KEY, { title: '' }, isNovelMeta)
   );
 
   // Refresh whichever piece of state just got persisted. autosaveService
@@ -87,6 +110,9 @@ export const NovelDataProvider: React.FC<{ children: ReactNode }> = ({ children 
       if (keys.includes(EVENTS_KEY)) {
         setCustomTimelineEventsState(readJSON<TimelineEvent[]>(EVENTS_KEY, [], isArray));
       }
+      if (keys.includes(NOVEL_META_KEY)) {
+        setNovelMetaState(readJSON<NovelMeta>(NOVEL_META_KEY, { title: '' }, isNovelMeta));
+      }
     };
     window.addEventListener('krnl_storage_synced', handleStorageSynced);
     return () => window.removeEventListener('krnl_storage_synced', handleStorageSynced);
@@ -97,11 +123,14 @@ export const NovelDataProvider: React.FC<{ children: ReactNode }> = ({ children 
     characters,
     loreItems,
     customTimelineEvents,
+    novelTitle: novelMeta.title,
     setChapters: (next, immediate = false) => autosaveService.scheduleSave(CHAPTERS_KEY, next, immediate),
     setCharacters: (next, immediate = false) => autosaveService.scheduleSave(CHARACTERS_KEY, next, immediate),
     setLoreItems: (next, immediate = false) => autosaveService.scheduleSave(LORE_KEY, next, immediate),
     setCustomTimelineEvents: (next, immediate = false) =>
       autosaveService.scheduleSave(EVENTS_KEY, next, immediate),
+    setNovelTitle: (next, immediate = false) =>
+      autosaveService.scheduleSave(NOVEL_META_KEY, { title: next }, immediate),
   };
 
   return <NovelDataContext.Provider value={value}>{children}</NovelDataContext.Provider>;

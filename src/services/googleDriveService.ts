@@ -103,7 +103,7 @@ export const signOutGoogle = async () => {
 /**
  * Drive API Helper: Find or create app root folder
  */
-export async function findOrCreateDriveFolder(folderName = 'El Kernel del Vacio - Manuscrito & Biblia'): Promise<DriveFileInfo> {
+export async function findOrCreateDriveFolder(folderName = 'Neo_Scribe - Manuscrito & Biblia'): Promise<DriveFileInfo> {
   const token = await getAccessToken();
   if (!token) throw new Error('No estás autenticado en Google Drive. Inicia sesión primero.');
 
@@ -217,14 +217,15 @@ export async function syncAllToGoogleDrive(
   chapters: Chapter[],
   characters: NovelCharacter[],
   customTimelineEvents: TimelineEvent[] = [],
-  loreItems: LoreItem[] = []
+  loreItems: LoreItem[] = [],
+  novelTitle: string = 'Mi Novela'
 ): Promise<DriveSyncResult> {
   try {
-    const folder = await findOrCreateDriveFolder();
+    const folder = await findOrCreateDriveFolder(`${novelTitle} - Manuscrito & Biblia`);
     const uploadedFiles: DriveFileInfo[] = [];
 
     // 1. Manuscrito Completo (.md)
-    let fullManuscript = `# EL KERNEL DEL VACÍO\n*Manuscrito diegético generado automáticamente*\n*Fecha de sincronización: ${new Date().toISOString()}*\n\n---\n\n`;
+    let fullManuscript = `# ${novelTitle.toUpperCase()}\n*Manuscrito diegético generado automáticamente*\n*Fecha de sincronización: ${new Date().toISOString()}*\n\n---\n\n`;
     chapters
       .slice()
       .sort((a, b) => a.number - b.number)
@@ -253,7 +254,7 @@ export async function syncAllToGoogleDrive(
     // 4. Biblia de Worldbuilding y Eventos
     const bibleData = {
       exportedAt: new Date().toISOString(),
-      novelTitle: 'El Kernel del Vacío',
+      novelTitle,
       charactersCount: characters.length,
       chaptersCount: chapters.length,
       customTimelineEvents,

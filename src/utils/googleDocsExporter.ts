@@ -27,13 +27,16 @@ import { CANONICAL_TIMELINE_EVENTS } from '../data/canonicalTimeline';
 /**
  * Generates an HTML document specially formatted for Google Docs import and copy-pasting.
  * Google Docs recognizes standard HTML tags, CSS styling, table borders, and colors seamlessly.
+ *
+ * `title` is whatever the author named their bible (see `WorldbuildingExportModal`'s
+ * title field, backed by `useNovelData().novelTitle`) — never hardcoded here.
  */
-export function generateGoogleDocsHtml(characters: NovelCharacter[], chapters: Chapter[]): string {
+export function generateGoogleDocsHtml(characters: NovelCharacter[], chapters: Chapter[], title: string): string {
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
-  <title>Biblia de Worldbuilding - El Kernel del Vacío</title>
+  <title>Biblia de Worldbuilding - ${escapeHtml(title)}</title>
   <style>
     body {
       font-family: 'Arial', 'Helvetica Neue', sans-serif;
@@ -190,7 +193,7 @@ export function generateGoogleDocsHtml(characters: NovelCharacter[], chapters: C
 </head>
 <body>
 
-  <h1 class="doc-title">Biblia de Worldbuilding: El Kernel del Vacío</h1>
+  <h1 class="doc-title">Biblia de Worldbuilding: ${escapeHtml(title)}</h1>
   <div class="doc-subtitle">Proyecto de Ópera Espacial Dura // Tecnomagia basada en el Sustrato de Planck</div>
 
   <div class="doc-meta">
@@ -200,7 +203,7 @@ export function generateGoogleDocsHtml(characters: NovelCharacter[], chapters: C
   </div>
 
   <h1>1. Axiomas Inviolables de la Realidad</h1>
-  <p>En el universo de <em>El Kernel del Vacío</em>, la realidad física no es una creación mágica ni una metáfora espiritual: es una estructura computada sobre una malla a escala de Planck (10⁻³⁵ m). Todo inyector, reliquia y nave debe obedecer los siguientes axiomas fundamentales:</p>
+  <p>En el universo de <em>${escapeHtml(title)}</em>, la realidad física no es una creación mágica ni una metáfora espiritual: es una estructura computada sobre una malla a escala de Planck (10⁻³⁵ m). Todo inyector, reliquia y nave debe obedecer los siguientes axiomas fundamentales:</p>
 
   ${CANONICAL_AXIOMS.map(axiom => `
     <div class="callout">
@@ -406,7 +409,7 @@ export function generateGoogleDocsHtml(characters: NovelCharacter[], chapters: C
 
   <hr/>
   <p style="text-align: center; color: #888; font-size: 9pt;">
-    Fin del Documento Canónico // Generado automáticamente por KRNL.VACUO Worldbuilding Suite
+    Fin del Documento Canónico // Generado automáticamente por Neo_Scribe
   </p>
 </body>
 </html>`;
@@ -424,14 +427,16 @@ function escapeHtml(text: string): string {
 /**
  * Builds a binary Microsoft Word (.docx) document using the `docx` package.
  * Google Docs natively opens, renders, and edits .docx documents with 100% typographic fidelity.
+ *
+ * `title` is whatever the author named their bible — never hardcoded here.
  */
-export async function generateWordDocxBible(characters: NovelCharacter[], chapters: Chapter[]): Promise<Blob> {
+export async function generateWordDocxBible(characters: NovelCharacter[], chapters: Chapter[], title: string): Promise<Blob> {
   const sectionsChildren: any[] = [];
 
   // Title & Subtitle
   sectionsChildren.push(
     new Paragraph({
-      text: 'BIBLIA DE WORLDBUILDING: EL KERNEL DEL VACÍO',
+      text: `BIBLIA DE WORLDBUILDING: ${title.toUpperCase()}`,
       heading: HeadingLevel.TITLE,
       spacing: { after: 150 },
       alignment: AlignmentType.CENTER,

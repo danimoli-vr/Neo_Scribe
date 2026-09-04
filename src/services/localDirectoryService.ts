@@ -1,4 +1,5 @@
 import { Chapter, NovelCharacter, TimelineEvent, LoreItem } from '../types';
+import { slugify } from '../utils/slugify';
 
 export interface LocalDirectoryState {
   isSupported: boolean;
@@ -77,7 +78,8 @@ export class LocalDirectoryService {
     chapters: Chapter[],
     characters: NovelCharacter[],
     customEvents: TimelineEvent[] = [],
-    loreItems: LoreItem[] = []
+    loreItems: LoreItem[] = [],
+    novelTitle: string = 'Mi Novela'
   ): Promise<{ success: boolean; filesSaved: string[]; error?: string }> {
     if (!directoryHandle) {
       return {
@@ -136,7 +138,7 @@ ${ch.content || ''}
       const fullManuscriptHandle = await directoryHandle.getFileHandle('MANUSCRITO_COMPLETO.md', { create: true });
       const fullWritable = await fullManuscriptHandle.createWritable();
 
-      let fullText = `# EL KERNEL DEL VACÍO\n*Manuscrito diegético completo*\n*Actualizado: ${new Date().toLocaleString()}*\n\n---\n\n`;
+      let fullText = `# ${novelTitle.toUpperCase()}\n*Manuscrito diegético completo*\n*Actualizado: ${new Date().toLocaleString()}*\n\n---\n\n`;
       chapters
         .slice()
         .sort((a, b) => a.number - b.number)
@@ -151,7 +153,7 @@ ${ch.content || ''}
       const bibleHandle = await directoryHandle.getFileHandle('WORLDBUILDING_BIBLIA.json', { create: true });
       const bibleWritable = await bibleHandle.createWritable();
       const bibleData = {
-        novelTitle: 'El Kernel del Vacío',
+        novelTitle,
         syncedAt: new Date().toISOString(),
         characters,
         chapters,
@@ -174,9 +176,15 @@ ${ch.content || ''}
   /**
    * Fallback export as a downloadable bundle in case File System Access API is unavailable or blocked
    */
-  public static exportDirectJsonBundle(chapters: Chapter[], characters: NovelCharacter[], customEvents: TimelineEvent[] = [], loreItems: LoreItem[] = []) {
+  public static exportDirectJsonBundle(
+    chapters: Chapter[],
+    characters: NovelCharacter[],
+    customEvents: TimelineEvent[] = [],
+    loreItems: LoreItem[] = [],
+    novelTitle: string = 'Mi Novela'
+  ) {
     const bundle = {
-      app: 'El Kernel del Vacío',
+      app: novelTitle,
       version: '1.0.0',
       exportedAt: new Date().toISOString(),
       chapters,
@@ -185,11 +193,13 @@ ${ch.content || ''}
       loreItems
     };
 
+    const safeSlug = slugify(novelTitle, 'Mi_Novela').toLowerCase();
+
     const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `el_kernel_del_vacio_respaldo_${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `${safeSlug}_respaldo_${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

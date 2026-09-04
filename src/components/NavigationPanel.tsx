@@ -146,11 +146,11 @@ export const NavigationPanel: React.FC<NavigationPanelProps> = ({
             {!isCollapsed && (
               <div className="leading-tight truncate">
                 <div className="font-bold text-white tracking-wider flex items-center gap-1.5">
-                  <span className="truncate">{terms.appName}</span>
+                  <span className="truncate">Neo_Scribe</span>
                   <span className="text-[9px] text-cyan-400 font-bold bg-cyan-950/60 px-1 py-0.2 rounded-xs border border-cyan-800/60 shrink-0">{currentGenre.badge}</span>
                 </div>
                 <div className="text-[10px] text-slate-500 truncate">
-                  {currentGenre.shortName.toUpperCase()}
+                  {terms.appName} · {currentGenre.shortName.toUpperCase()}
                 </div>
               </div>
             )}
